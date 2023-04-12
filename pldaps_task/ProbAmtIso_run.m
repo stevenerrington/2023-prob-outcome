@@ -1361,6 +1361,15 @@ end
 
 end
 
+function strobe(word)
+Datapixx('SetDoutValues',fix(word),hex2dec('007fff'))    % set word in first 15 bits
+Datapixx('RegWr');
+Datapixx('SetDoutValues',2^16,hex2dec('010000'))   % set STRB to 1 (true)
+Datapixx('RegWr');
+Datapixx('SetDoutValues',0,hex2dec('017fff'))      % reset strobe and all 15 bits to 0.
+Datapixx('RegWr');
+end
+
 %% Legacy code
 % function [EyeX, EyeY, joy, eXd, eYd]  =   getEyeJoy(c)
 % % update data-pixx registers
@@ -1428,42 +1437,35 @@ end
 % 
 % 
 % %this strobe is from fixate
-% function strobe(word)
-% Datapixx('SetDoutValues',fix(word),hex2dec('007fff'))    % set word in first 15 bits
-% Datapixx('RegWr');
-% Datapixx('SetDoutValues',2^16,hex2dec('010000'))   % set STRB to 1 (true)
-% Datapixx('RegWr');
-% Datapixx('SetDoutValues',0,hex2dec('017fff'))      % reset strobe and all 15 bits to 0.
-% Datapixx('RegWr');
+
+% 
+
+function sendPlexonInfo(c, s, t)
+
+% %start sending
+% strobe(c.codes.startsendingtrialinfo);
+%
+% strobe(c.rewardorpunishfirst+11000);
+% strobe(c.RewardRange1+12000);
+% strobe(c.RewardRange2+13000);
+% strobe(c.PunishmentRange1+12500);
+% strobe(c.PunishmentRange2+13500);
+% try
+% strobe( c.energy(c.PunishmentRange1./2)+12700);
+% catch
+%   strobe( c.energy(c.PunishmentRange1)+12700);
 % end
-% 
-% 
-% function sendPlexonInfo(c, s, t)
-% 
-% % %start sending
-% % strobe(c.codes.startsendingtrialinfo);
-% %
-% % strobe(c.rewardorpunishfirst+11000);
-% % strobe(c.RewardRange1+12000);
-% % strobe(c.RewardRange2+13000);
-% % strobe(c.PunishmentRange1+12500);
-% % strobe(c.PunishmentRange2+13500);
-% % try
-% % strobe( c.energy(c.PunishmentRange1./2)+12700);
-% % catch
-% %   strobe( c.energy(c.PunishmentRange1)+12700);
-% % end
-% %
-% % try
-% % strobe( c.energy(c.PunishmentRange2./2)+13700);
-% % catch
-% %     strobe( c.energy(c.PunishmentRange2)+13700);
-% % end
-% % strobe(c.codes.endsendingtrialinfo);
-% 
+%
+% try
+% strobe( c.energy(c.PunishmentRange2./2)+13700);
+% catch
+%     strobe( c.energy(c.PunishmentRange2)+13700);
 % end
-% 
-% 
+% strobe(c.codes.endsendingtrialinfo);
+
+end
+
+
 % 
 % function [c, PDS]               = plotwindowsetup(c, PDS)
 % 

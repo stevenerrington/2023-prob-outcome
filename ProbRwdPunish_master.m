@@ -4,34 +4,26 @@ clear all; close all; clc
 dirs = get_dirs_probrwdpunish('wustl');
 
 % Define and load example datafile
-datafile = 'ProbRwdPunish_11_04_2023_09_48';
+datafile = 'ProbRwdPunish_12_04_2023_13_33';
 data = load(fullfile(dirs.root,'data',datafile));
 
-% Setup table of key event times
-trialEventTimes = table();
-trialEventTimes.i = data.PDS.trialnumber';
-trialEventTimes.trialStart = data.PDS.trialstarttime;
-trialEventTimes.fixOn      = trialEventTimes.trialStart+data.PDS.timefpon';
-trialEventTimes.choiceA_on = trialEventTimes.trialStart+data.PDS.timetargeton';
-trialEventTimes.choiceB_on = trialEventTimes.trialStart+data.PDS.timetargeton2';
-trialEventTimes.punish = trialEventTimes.trialStart+data.PDS.TimeofPunish';
-trialEventTimes.reward = trialEventTimes.trialStart+data.PDS.timereward';
-trialEventTimes.trialEnd = trialEventTimes.trialStart+data.PDS.trialover';
-
-trialInfo = table();
-trialInfo.i = data.PDS.trialnumber';
-trialInfo.choice_order = data.PDS.whichtoshowfirst';
-trialInfo.choiceSelected = data.PDS.chosenwindow';
-trialInfo.delivered_punish = data.PDS.PunishStrength_';
+[trialEventTimes, trialInfo] = get_trial_timeinfo(data.PDS);
 
 
-(10./data.PDS.punfactoffer2')/10;
-(10./data.PDS.rewfactoffer2')/10;
+%% Troubleshooting
+% (1) While testing the experiment with the laser, it was delivered in
+% instances where the revealed probability is 0%
+punish_identifiers = ...
+    [trialInfo.choiceSelect_punish_reveal, ... 
+    trialInfo.delivered_punish,...
+    data.PDS.PunishStrength_',...
+    data.PDS.TimeofPunish'];
 
-trialInfo.choiceA_present_rwdAmt = (data.PDS.RewardRange1*10)';
-trialInfo.choiceA_present_rwdProb = (10./data.PDS.rewfactoffer1')/10;
-trialInfo.choiceA_present_rwdEV = 0;
-trialInfo.choiceA_present_punishAmt = 0;
-trialInfo.choiceA_present_punishProb = (10./data.PDS.punfactoffer1')/10;
-trialInfo.choiceA_present_punishEV = 0;
+% (2) Secondary, is the time the laser is delivered being accurately
+% marked?
+
+% (3) The actual magnitude (i.e. the laser Joule's, or solenoid time aren't
+% clearly defined anywhere, and I'm not sure they are being used? Just a 0
+% or 1 is being delivered.
+
 

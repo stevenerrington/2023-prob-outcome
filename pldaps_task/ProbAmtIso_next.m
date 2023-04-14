@@ -84,29 +84,27 @@ function [c, s]         = nextparams(c, s)
 c.fracsize=4;
 c.infocuesize=1.75;
 
-ITI_dur=2;
+ITI_dur= rand(3,6);
 c.fixreq=2;
 TS_dur=0.5;
 CS_dur=3;
 trace_dur=0; %this is set to 0 as baseline
 rewardtimeafterCSoff=[1.5 1.5 1.5];
-rewardtimeafterCSoff=rewardtimeafterCSoff(randperm(length(rewardtimeafterCSoff))); rewardtimeafterCSoff=rewardtimeafterCSoff(1)
+rewardtimeafterCSoff=rewardtimeafterCSoff(randperm(length(rewardtimeafterCSoff))); rewardtimeafterCSoff=rewardtimeafterCSoff(1);
 c.rewardtimeafterCSoff=rewardtimeafterCSoff;
 c.CS_dur=CS_dur;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-c.energy = [0 1 1.5];
-c.rewarddist = [0.3 0.6 0.9];
-
-c.energy = c.energy(end);
-c.rewarddist = c.rewarddist(end);
+c.energy = [0.5 1];
+c.rewarddist = [0.1 1.0];
 
 RewardRange1=[0 50 100];
 RewardRange2=[0 50 100];
 PunishmentRange1=[0 50 100];
 PunishmentRange2=[0 50 100];
+
 for xB=1:100
     c.RewardRange1=RewardRange1(randi(length(RewardRange1)));
     c.RewardRange2=RewardRange2(randi(length(RewardRange2)));
@@ -122,12 +120,6 @@ end
 
 % Define choices/outcomes >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 % Option 1
-rew1=c.rewarddist;    pun1=c.energy;
-
-% Option 2
-rew2=c.rewarddist;    pun2=c.energy;
-
-
 rew1=1;    pun1=1;
 rew2=1;    pun2=1;
 
@@ -222,6 +214,7 @@ c.PunishmentRange2=(c.PunishmentRange2./10)./ c.punfactoffer2;
 
 c.maxValrange=10;
 c.rewardorpunishfirst= 1;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

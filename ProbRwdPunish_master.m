@@ -4,10 +4,11 @@ clear all; close all; clc
 dirs = get_dirs_probrwdpunish('wustl');
 
 % Define and load example datafile
-datafile = 'ProbRwdPunish_12_04_2023_13_33';
+datafile = 'ProbRwdPunish_14_04_2023_15_36';
 data = load(fullfile(dirs.root,'data',datafile));
 
 [trialEventTimes, trialInfo] = get_trial_timeinfo(data.PDS);
+
 
 
 %% Troubleshooting

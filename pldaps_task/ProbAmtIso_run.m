@@ -101,7 +101,6 @@ while  ~any(t.state == t.endStates) && c.quit == 0
             end
             c.outcometrial=0;
             TimeTargon=NaN;
-            fprintf('Trial start \n')
             
         % Add a fixspot on screen --------------------
         case 0.00001
@@ -115,6 +114,7 @@ while  ~any(t.state == t.endStates) && c.quit == 0
             t.strobeOnFlip.value = c.codes.fixdoton;
             delayvar = GetSecs;
             t.timeofabort=NaN;
+            fprintf('-------------------------- \n Trial %i \n', c.j)
             fprintf('Fix spot on \n')
             
             
@@ -190,7 +190,8 @@ while  ~any(t.state == t.endStates) && c.quit == 0
             
              % Option 2 (B) selected:
            if delayvar >= (tempback + s.targFixDurReq) && checkEye(c.passEye, t.ang2-[s.EyeX s.EyeY], [t.PtpWindW, t.PtpWindH])
-                
+                fprintf('Choice 2 selected \n')
+               
                 c.chosenwindow=2; c.chosen=2;
                 
                 if c.rewardorpunishfirst==1
@@ -206,16 +207,30 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                 
                 t.timeChoice     = GetSecs - t.trstart;
                 
-                s.RewardTime=c.ActualRewardOffer2;
+                % s.RewardTime=c.ActualRewardOffer2;
                 s.PunishStrength_=c.ActualPunishOffer2;
                 
-                %                 try
-                %                     s.PunishStrength_=c.energy(c.ActualPunish./2);
-                %                 catch
-                % %                     s.PunishStrength_=0.01;
-                % %                 end
-                %                 s.PunishStrength=(c.PunishmentRange2);
-                %
+                % Reward amount setup ---------------------------
+                if c.ActualRewardOffer2 == 1 % If prob is 100%
+                    switch c.maxValrangeOf2R 
+                        case 5; s.RewardTime = c.rewarddist(1); % Small magnitude
+                        case 10; s.RewardTime = c.rewarddist(2); % High magnitude
+                    end   
+                else 
+                    s.RewardTime = 0; % No Reward
+                end
+                
+                % Punish amount setup ---------------------------
+                if c.ActualPunishOffer2 == 1 % If prob is 100%
+                    switch c.maxValrangeOf2P
+                        case 5; s.PunishStrength_ = c.energy(1); % Small magnitude
+                        case 10; s.PunishStrength_ = c.energy(2); % High magnitude
+                    end   
+                else 
+                    s.PunishStrength_ = 0; % No Punishment
+                end                
+                
+ 
                 tic
                 durations=1; %1 is a 2ms pulse
                 spotsize=0; % 0 means 4mm which is the smallest spot size
@@ -236,7 +251,8 @@ while  ~any(t.state == t.endStates) && c.quit == 0
             elseif delayvar >= (tempback + s.targFixDurReq) && checkEye(c.passEye, t.ang1-[s.EyeX s.EyeY], [t.PtpWindW, t.PtpWindH])
                 % chosing of fractal one if fixated on for > delayvar
                 
-                
+                fprintf('Choice 1 selected \n')
+               
                 c.chosenwindow=1;
                 c.chosen=1;
                 
@@ -253,18 +269,30 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                 
                 t.timeChoice     = GetSecs - t.trstart;
                 
-                s.RewardTime=c.ActualRewardOffer2;
-                s.PunishStrength_=c.ActualPunishOffer2;
+                s.RewardTime=c.ActualRewardOffer1;
+                s.PunishStrength_=c.ActualPunishOffer1;
                 
-                %                 s.RewardTime=c.RewardRange1./10;
-                %
-                %                 try
-                %                 s.PunishStrength_=c.energy(c.ActualPunish./2);
-                %                 catch
-                %                     s.PunishStrength_=0.01;
-                %                 end
-                %                 s.PunishStrength=(c.PunishmentRange1);
-                %
+                if c.ActualRewardOffer1 == 1 % If prob is 100%
+                    switch c.maxValrangeOf1R 
+                        case 5; s.RewardTime = c.rewarddist(1); % Small magnitude
+                        case 10; s.RewardTime = c.rewarddist(2); % High magnitude
+                    end   
+                else 
+                    s.RewardTime = 0; % No Reward
+                end
+                
+                % Punish amount setup ---------------------------
+                if c.ActualPunishOffer1 == 1 % If prob is 100%
+                    switch c.maxValrangeOf1P
+                        case 5; s.PunishStrength_ = c.energy(1); % Small magnitude
+                        case 10; s.PunishStrength_ = c.energy(2); % High magnitude
+                    end   
+                else 
+                    s.PunishStrength_ = 0; % No Punishment
+                end              
+                
+                
+                
                 
                 tic
                 try
@@ -305,7 +333,6 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                 t.state =0.050566;
                 delayvar=GetSecs;
                 c.punishdel=1;
-                s.TimeofPunish     = GetSecs - t.trstart;
                 
                 try
                     % Deliver pulse
@@ -317,12 +344,15 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                     fwrite(s1, PulseString(5), 'uint8')
                     fwrite(s1, sscanf('B9', '%x'), 'uint8')
                 end
-                
+                s.TimeofPunish     = GetSecs - t.trstart;
+                fprintf('Punishment epoch... \n')
+
                 if s.PunishStrength_~=0
                     strobe(c.codes.laser);
+                    fprintf('****LASER DELIVERED**** \n')
                 else
                     strobe(c.codes.nolaser);
-                end
+               end
             end
             
         case 0.050566
@@ -335,6 +365,7 @@ while  ~any(t.state == t.endStates) && c.quit == 0
             if (GetSecs - delayvar) >= 1; tstate_back=0.005575; end
             
             if (GetSecs - delayvar) >= 3.5
+                fprintf('Reward epoch... \n')
                 t.state = 0.0505661;
                 c.punishdel=1;
                 if s.RewardTime>0
@@ -356,6 +387,7 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                     Datapixx('RegWrRd');
                 end
                 strobe(c.codes.reward);
+                fprintf('****REWARD DELIVERED**** \n')
                 t.timeOUTCOME     = GetSecs - t.trstart;
                 delayvar = GetSecs;
                 % tstate_back=  0.0055559;
@@ -421,6 +453,8 @@ while  ~any(t.state == t.endStates) && c.quit == 0
             
         case 999900
             if GetSecs>=delayvar + 2
+                fprintf('End of trial >>>>>>>>>>>>>>>>>>>>> \n')
+
                 strobe(c.codes.trialEnd);
                 t.state = 1.5;
                 t.trialover     = GetSecs - t.trstart;
@@ -553,13 +587,6 @@ sendPlexonInfo(c, s, t);
 [PDS, c, s] = trial_end(PDS, c, s, t);
 
 end   
-
-
-
-
-
-
-
 
 
 
@@ -1306,24 +1333,25 @@ if c.j~=0
     PDS.targAngle2(c.j)         = c.angs(2);            % Target Angle (2)    
     PDS.targAmp(c.j)            = c.AmpUseAver;         % Target Amplitude (1 & 2)
     PDS.targFixDurReq(c.j)      = s.targFixDurReq;      % Required fixation time
-    PDS.rewardorpunishfirst(c.j)= c.rewardorpunishfirst;% Reward or punish 
+    PDS.outcomeorder(c.j)       = c.rewardorpunishfirst;% Reward or punish 
 
     % Option related variables ------------------------------------------
     %   Option 1:
-    PDS.Offer1_Choice_RwdAmt(c.j) = c.maxValrangeOf1R;
-    PDS.Offer1_Choice_RwdProb(c.j) = c.RewardRange1./c.maxValrangeOf1R;
-    PDS.Offer1_Choice_PunishAmt(c.j) = c.maxValrangeOf1P;
-    PDS.Offer1_Choice_PunishProb(c.j) = c.PunishmentRange1/c.maxValrangeOf1P;    
-    PDS.Offer1_Reveal_RwdProb(c.j) = c.Offer1Rew; 
-    PDS.Offer1_Reveal_PunishProb(c.j) = c.Offer1Pun; 
+
+    PDS.offerInfo{1}.choice_rwdamount(c.j) = c.maxValrangeOf1R;
+    PDS.offerInfo{1}.choice_rwdprob(c.j) = c.RewardRange1./c.maxValrangeOf1R;
+    PDS.offerInfo{1}.choice_punishamount(c.j) = c.maxValrangeOf1P;
+    PDS.offerInfo{1}.choice_punishprob(c.j) = c.PunishmentRange1/c.maxValrangeOf1P;
+    PDS.offerInfo{1}.reveal_rwdprob(c.j) = c.Offer1Rew;
+    PDS.offerInfo{1}.reveal_punishprob(c.j) = c.Offer1Pun; 
     
     %   Option 2:
-    PDS.Offer2_Choice_RwdAmt(c.j) = c.maxValrangeOf2R;
-    PDS.Offer2_Choice_RwdProb(c.j) = c.RewardRange2./c.maxValrangeOf2R;
-    PDS.Offer2_Choice_PunishAmt(c.j) = c.maxValrangeOf2P;
-    PDS.Offer2_Choice_PunishProb(c.j) = c.PunishmentRange2/c.maxValrangeOf2P;    
-    PDS.Offer2_Reveal_RwdProb(c.j) = c.Offer2Rew; 
-    PDS.Offer2_Reveal_PunishProb(c.j) = c.Offer2Pun; 
+    PDS.offerInfo{2}.choice_rwdamount(c.j) = c.maxValrangeOf2R;
+    PDS.offerInfo{2}.choice_rwdprob(c.j) = c.RewardRange2./c.maxValrangeOf2R;
+    PDS.offerInfo{2}.choice_punishamount(c.j) = c.maxValrangeOf2P;
+    PDS.offerInfo{2}.choice_punishprob(c.j) = c.PunishmentRange2/c.maxValrangeOf2P;
+    PDS.offerInfo{2}.reveal_rwdprob(c.j) = c.Offer2Rew;
+    PDS.offerInfo{2}.reveal_punishprob(c.j) = c.Offer2Pun; 
 
     %   Selection:
     PDS.whichtoshowfirst(c.j) = c.whichtoshowfirst;     % First shown option (1 or 2)
@@ -1337,25 +1365,36 @@ if c.j~=0
     PDS.timetargeton2(c.j)      = t.timeTARGETON2;      % Option 2 Onset
     PDS.timeChoice(c.j)         = t.timeChoice;         % ?Time of choice *to check
     PDS.timereward(c.j)         = t.timeOUTCOME;        % Reward delivery time
-    PDS.pulseprogtime(c.j)      = c.pulseprogtime;      % Laser duration
     PDS.trialover(c.j)          = t.trialover;          % Trial finish time
 
-    % Conditional outcomes:
-    %   Punish strength
-    try PDS.PunishStrength_(c.j)= s.PunishStrength_;
-    catch PDS.PunishStrength_(c.j)= NaN;
-    end
+ 
+    PDS.pulseprogtime(c.j)      = c.pulseprogtime;      % Laser duration
+    %PDS.iti_dur(c.j)            = c.ITI_dur;            % ITI duration
+    %PDS.ts_dur(c.j)             = c.TS_dur;             % TS duration
+    %PDS.cs_dur(c.j)             = c.CS_dur;             % CS duration
 
+    
+    % Conditional outcomes:
     %   Punish time
-    try PDS.TimeofPunish(c.j)= s.TimeofPunish;
-    catch PDS.TimeofPunish(c.j)= NaN;
+    try PDS.timepunish(c.j)= s.TimeofPunish;
+    catch PDS.timepunish(c.j)= NaN;
     end
 
     %   Reward time
-    try PDS.RewardTimeDur(c.j)= s.RewardTime;
-    catch PDS.RewardTimeDur(c.j)= NaN;
+    try PDS.timereward(c.j)= s.RewardTime;
+    catch PDS.timereward(c.j)= NaN;
+    end
+    
+    %   Punish magnitude
+    try PDS.magnitude_punish(c.j)= s.PunishStrength_;
+    catch PDS.magnitude_punish(c.j)= NaN;
     end
 
+    %   Punish magnitude
+    try PDS.magnitude_reward(c.j)= s.RewardTimeDur;
+    catch PDS.magnitude_reward(c.j)= NaN;
+    end
+    
     clear t;
 end
 

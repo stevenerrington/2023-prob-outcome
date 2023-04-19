@@ -8,6 +8,12 @@ choicearray=[]; save choicearray.mat choicearray;
 choicearray=[]; save choicearray2.mat choicearray;
 
 
+% Settings
+c.intrareveal_interval = 1;
+c.reveal_outcome_interval = 1.5;
+c.intraoutcome_interval = 0;
+
+
 display('Init')
 %c.startBlock = 1;%randi([1 2]);
 %disp(c.startBlock)

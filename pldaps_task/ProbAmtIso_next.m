@@ -100,10 +100,10 @@ c.CS_dur=CS_dur;
 c.energy = [0.5 1];
 c.rewarddist = [0.1 1.0];
 
-RewardRange1=[0 50 100];
-RewardRange2=[0 50 100];
-PunishmentRange1=[0 50 100];
-PunishmentRange2=[0 50 100];
+RewardRange1=[0 50 100]; % [0 50 100]
+RewardRange2=[0 50 100]; % [0 50 100]
+PunishmentRange1=[0 50 100]; % [0 50 100]
+PunishmentRange2=[0 50 100]; % [0 50 100]
 
 for xB=1:100
     c.RewardRange1=RewardRange1(randi(length(RewardRange1)));

@@ -4,27 +4,11 @@ clear all; close all; clc
 dirs = get_dirs_probrwdpunish('wustl');
 
 % Define and load example datafile
-datafile = 'ProbRwdPunish_19_04_2023_12_30';
+datafile = 'ProbRwdPunish_19_06_2023_11_28';
 data = load(fullfile(dirs.root,'data',datafile));
 
 [trialEventTimes, trialInfo] = get_trial_timeinfo(data.PDS);
+[option_info] = get_option_info_glm(data.PDS, trialInfo);
 
-
-
-%% Troubleshooting
-% (1) While testing the experiment with the laser, it was delivered in
-% instances where the revealed probability is 0%
-punish_identifiers = ...
-    [trialInfo.choiceSelect_punish_reveal, ... 
-    trialInfo.delivered_punish,...
-    data.PDS.PunishStrength_',...
-    data.PDS.TimeofPunish'];
-
-% (2) Secondary, is the time the laser is delivered being accurately
-% marked?
-
-% (3) The actual magnitude (i.e. the laser Joule's, or solenoid time aren't
-% clearly defined anywhere, and I'm not sure they are being used? Just a 0
-% or 1 is being delivered.
-
+glmModel = get_task_glm(option_info);
 

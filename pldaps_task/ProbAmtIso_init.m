@@ -12,7 +12,9 @@ choicearray=[]; save choicearray2.mat choicearray;
 c.intrareveal_interval = 1;
 c.reveal_outcome_interval = 1.5;
 c.intraoutcome_interval = 0;
+c.reveal_change_flag = 0;
 
+c.iti_rwd_amount = 0.1;
 
 display('Init')
 %c.startBlock = 1;%randi([1 2]);
@@ -47,7 +49,6 @@ c.screenhpix                    = 1080;     % screen height (pixels)
 c.screenh                       = 293.22;   % screen height (mm)
 % %0.2715 per pixel
 % %1920 x 1080
-c.preTrialIti =0.750;
 
 c.repeatflag=0;
 c.previousTrialRepeated =0;
@@ -393,16 +394,16 @@ c.backcolor         = 2;
 % cuering                   8
 % muted green (fixation)    9
 
-c.humanColors       = [ 0, 0, 0;                        % 0
+c.humanColors       = [ 0, 0, 0;    % 0
     0.25, 0.25, 0.25;               % 1
     bgRGB;                          % 2
-    0.8, 0.8, 0.8;                  % 3
+    0.16, 0.52, 0.17;               % 3
     1, 1, 1;                        % 4
-    1, 0, 0;                        % 5
+    1, 0.2, 0.2;                    % 5
     0, 1, 0;                        % 6
-    0, 0, 1;                        % 7
+    0.4, 0.698, 1;                  % 7
     0.9,0.9,0.9;                    % 8
-    mutedGreen];                    % 9
+    1, 1, 1];                       % 9
 
 % colors for MONKEY's display
 % black                     0
@@ -438,11 +439,11 @@ c.monkeyColors       = [ 0, 0, 0;                       % 0
     bgRGB;                          % 2
     bgRGB;                          % 3
     1, 1, 1;                        % 4
-    bgRGB;                          % 5
+    1, 0.2, 0.2;                    % 5
     bgRGB;                          % 6
-    bgRGB;                          % 7
+    0.4, 0.698, 1;                  % 7
     0.9,0.9,0.9;                    % 8
-    mutedGreen];                    % 9
+    bgRGB];                    % 9
 
 
 c.humanColors(10,:)=c.colortwo;

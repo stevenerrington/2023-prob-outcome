@@ -6,13 +6,15 @@ function [PDS ,c ,s]= ProbAmtIso_run(PDS ,c ,s)
 % Setup trial based parameters
 s.fixDur  = 0.5;
 
-% Initialize trial-variables from the init function 
+% Initialize trial-variables from the init function
 [PDS, c, s, t]      = trial_init(PDS, c, s);
 t.wlCount = 0;
+c.reveal_first_idx = randi([1,2]);
+iti_rwd_time = randi([1 c.ITI_dur-1]);
 
 % Initialize hardware (laser) with serial-port handshake
 try
-    load('/Users/ilyamonosov/Documents/MATLAB/ProbRwdPunish/LaserCalibration/pulseMatrix.mat')
+    load('/Users/ilya/Documents/MATLAB/ProbRwdPunish/LaserCalibration/pulseMatrix.mat')
     startChar = s.startChar;
     endChar = s.endChar;
     laserOnChar = s.laserOnChar;
@@ -44,7 +46,7 @@ while  ~any(t.state == t.endStates) && c.quit == 0
     [lickSpoutInstantForce] = getLickForce(c);
     
     % NOTE: eyeXd and eyeYd are for velocity calculation and can eventually be
-    %       removed. 
+    %       removed.
     % FOR TESTING: s.EyeY=rand*50; s.EyeX=randsample([-180 180],1);
     
     
@@ -102,7 +104,7 @@ while  ~any(t.state == t.endStates) && c.quit == 0
             c.outcometrial=0;
             TimeTargon=NaN;
             
-        % Add a fixspot on screen --------------------
+            % Add a fixspot on screen --------------------
         case 0.00001
             c.repeatflag=0;
             tstate_back=0;
@@ -123,7 +125,7 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                 t.state=0.0055;
             end
             
-        % Present the first option ---------------------
+            % Present the first option ---------------------
         case 0.0055
             t.state =  0.0505123;
             tstate_back = 0.005;
@@ -132,9 +134,9 @@ while  ~any(t.state == t.endStates) && c.quit == 0
             c.loopCountOfTargetOn =t.wlCount;
             delayvar=GetSecs;
             fprintf('Choice 1 onset \n')
-
             
-        % Present the second option --------------------
+            
+            % Present the second option --------------------
         case 0.0505123
             if (GetSecs - delayvar) >= 0.5
                 t.state =0.0505;
@@ -153,14 +155,15 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                 tempback1=tempback;
             end
             
-        % Determine choice outcome --------------------
+            % Determine choice outcome --------------------
         case 0.0065
             temp1=GetSecs;
-            s.targFixDurReq=0.5;
+            s.targFixDurReq=c.targFixDurReq;
+            %s.targFixDurReq=0.5;
             
             if checkEye(c.passEye,t.PtargXY -[s.EyeX s.EyeY], [t.PtpWindW, t.PtpWindH]) && isnan(t.monkeyenteredtargwin)
                 t.monkeyenteredtargwin =GetSecs;
-                c.sampleInTargetZonevector(1,t.wlCount) =[true];                
+                c.sampleInTargetZonevector(1,t.wlCount) =[true];
             elseif checkEye(c.passEye,t.PtargXY -[s.EyeX s.EyeY], [t.PtpWindW, t.PtpWindH]) &&  ...
                     (GetSecs - t.monkeyenteredtargwin) > c.targetAcquisitionRequired ...
                     && isnan(t.monkeyenteredtargwinFix)
@@ -185,13 +188,13 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                 tstate_back=999999999;
                 t.timeOUTCOME=NaN;
                 fprintf('!NO CHOICE SELECTED \n')
-
+                
             end
             
-             % Option 2 (B) selected:
-           if delayvar >= (tempback + s.targFixDurReq) && checkEye(c.passEye, t.ang2-[s.EyeX s.EyeY], [t.PtpWindW, t.PtpWindH])
+            % Option 2 (B) selected:
+            if delayvar >= (tempback + s.targFixDurReq) && checkEye(c.passEye, t.ang2-[s.EyeX s.EyeY], [t.PtpWindW, t.PtpWindH])
                 fprintf('Choice 2 selected \n')
-               
+                
                 c.chosenwindow=2; c.chosen=2;
                 
                 if c.rewardorpunishfirst==1
@@ -212,11 +215,11 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                 
                 % Reward amount setup ---------------------------
                 if c.ActualRewardOffer2 == 1 % If prob is 100%
-                    switch c.maxValrangeOf2R 
+                    switch c.maxValrangeOf2R
                         case 5; s.RewardTime = c.rewarddist(1); % Small magnitude
                         case 10; s.RewardTime = c.rewarddist(2); % High magnitude
-                    end   
-                else 
+                    end
+                else
                     s.RewardTime = 0; % No Reward
                 end
                 
@@ -225,18 +228,18 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                     switch c.maxValrangeOf2P
                         case 5; s.PunishStrength_ = c.energy(1); % Small magnitude
                         case 10; s.PunishStrength_ = c.energy(2); % High magnitude
-                    end   
-                else 
+                    end
+                else
                     s.PunishStrength_ = 0; % No Punishment
-                end                
+                end
                 
- 
+                
                 tic
                 durations=1; %1 is a 2ms pulse
                 spotsize=0; % 0 means 4mm which is the smallest spot size
                 
                 try
-                    LaserPulse=[startChar,setChar,durations, s.PunishStrength_/0.25-1,spotsize,endChar];
+                    LaserPulse=[startChar,setChar,durations, s.PunishStrength_/0.25-1,spotsize,endChar]; %s.PunishStrength_/0.25-1
                     fwrite(s1, sscanf('CC', '%x'), 'uint8')
                     fwrite(s1, LaserPulse(2), 'uint8')
                     fwrite(s1, LaserPulse(3), 'uint8')
@@ -247,12 +250,12 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                 c.pulseprogtime=toc;
                 
                 
-            % Option 1 (A) selected:
+                % Option 1 (A) selected:
             elseif delayvar >= (tempback + s.targFixDurReq) && checkEye(c.passEye, t.ang1-[s.EyeX s.EyeY], [t.PtpWindW, t.PtpWindH])
                 % chosing of fractal one if fixated on for > delayvar
                 
                 fprintf('Choice 1 selected \n')
-               
+                
                 c.chosenwindow=1;
                 c.chosen=1;
                 
@@ -273,11 +276,11 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                 s.PunishStrength_=c.ActualPunishOffer1;
                 
                 if c.ActualRewardOffer1 == 1 % If prob is 100%
-                    switch c.maxValrangeOf1R 
+                    switch c.maxValrangeOf1R
                         case 5; s.RewardTime = c.rewarddist(1); % Small magnitude
                         case 10; s.RewardTime = c.rewarddist(2); % High magnitude
-                    end   
-                else 
+                    end
+                else
                     s.RewardTime = 0; % No Reward
                 end
                 
@@ -286,11 +289,26 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                     switch c.maxValrangeOf1P
                         case 5; s.PunishStrength_ = c.energy(1); % Small magnitude
                         case 10; s.PunishStrength_ = c.energy(2); % High magnitude
-                    end   
-                else 
+                    end
+                else
                     s.PunishStrength_ = 0; % No Punishment
-                end              
- 
+                end
+                
+                tic
+                durations=1; %1 is a 2ms pulse
+                spotsize=0; % 0 means 4mm which is the smallest spot size
+                
+                try
+                    LaserPulse=[startChar,setChar,durations, s.PunishStrength_/0.25-1,spotsize,endChar];
+                    fwrite(s1, sscanf('CC', '%x'), 'uint8')
+                    fwrite(s1, LaserPulse(2), 'uint8')
+                    fwrite(s1, LaserPulse(3), 'uint8')
+                    fwrite(s1, LaserPulse(4), 'uint8')
+                    fwrite(s1, LaserPulse(5), 'uint8')
+                    fwrite(s1, sscanf('B9', '%x'), 'uint8')
+                end
+                c.pulseprogtime=toc;
+                
                 
             elseif ~checkEye(c.passEye, t.ang1-[s.EyeX s.EyeY], [t.PtpWindW, t.PtpWindH]) & ~checkEye(c.passEye, t.ang2-[s.EyeX s.EyeY], [t.PtpWindW, t.PtpWindH]);
                 %  If out of both fractal choice windows reset the timer for choice
@@ -305,27 +323,28 @@ while  ~any(t.state == t.endStates) && c.quit == 0
             end
             delayvar = GetSecs;
             
-        % Show choice outcome --------------------
+            % Show choice outcome --------------------
         case 0.05056
             
-            if (GetSecs - delayvar) >= 1
+            if (GetSecs - delayvar) >= 1 % One second after choice is confirmed
                 tstate_back=0.005575;
-
             end
-
-            if (GetSecs - delayvar) >= 1+c.intrareveal_interval
+            
+            
+            if (GetSecs - delayvar) >= 1 + c.intrareveal_interval
                 tstate_back=0.005575;
                 c.punishdel = 1;
                 t.state =0.050566;
                 delayvar=GetSecs;
-            end                
-
+            end
+            
+            if (GetSecs - delayvar) >= 1 + c.intrareveal_interval + 0.2 % One second after choice is confirmed
+            end
             
         case 0.050566
-            %if (GetSecs - delayvar) >= 1; tstate_back=0.005575; end
             if (GetSecs - delayvar) >= c.reveal_outcome_interval; t.state = 99990; delayvar=GetSecs; end
             
-        % Deliver reward outcome --------------------
+            % Deliver reward outcome --------------------
         case 0.05059
             
             if (GetSecs - delayvar) >= 1; tstate_back=0.005575; end
@@ -352,18 +371,18 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                     Datapixx('StartDacSchedule');
                     Datapixx('RegWrRd');
                     fprintf('****REWARD DELIVERED**** \n')
-               end
+                end
                 strobe(c.codes.reward);
                 t.timeOUTCOME     = GetSecs - t.trstart;
                 delayvar = GetSecs;
                 % tstate_back=  0.0055559;
             end
             
-                        
+            
         case 99990
             t.state = 999900;
             fprintf('Outcome state \n')
-
+            
             %tstate_back=t.state;
             if s.RewardTime>0
                 Volt                        = 4.0;
@@ -383,7 +402,7 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                 Datapixx('StartDacSchedule');
                 Datapixx('RegWrRd');
                 fprintf('****REWARD DELIVERED**** \n')
-           end
+            end
             strobe(c.codes.reward);
             t.timeOUTCOME     = GetSecs - t.trstart;
             delayvar = GetSecs;
@@ -398,16 +417,27 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                     fwrite(s1, PulseString(4), 'uint8')
                     fwrite(s1, PulseString(5), 'uint8')
                     fwrite(s1, sscanf('B9', '%x'), 'uint8')
+                    laser_del_flag = 1;
+                catch
+                    laser_del_flag = 0;
                 end
                 s.TimeofPunish     = GetSecs - t.trstart;
                 
-                if s.PunishStrength_~=0
+                if s.PunishStrength_~=0 && laser_del_flag == 1
                     strobe(c.codes.laser);
                     fprintf('****LASER DELIVERED**** \n')
+                elseif s.PunishStrength_~=0 && laser_del_flag == 0
+                    strobe(c.codes.laser);
+                    fprintf('!!!!! ****LASER FAULT: NO DELIVERY**** \n')
                 else
                     strobe(c.codes.nolaser);
                 end
                 tstate_back=  0.0055559;
+            
+                fprintf('End of Trial >>>>>>>>>>>>>>>>>>>>> \n')
+                fprintf('ITI: %i seconds... \n', c.ITI_dur)
+                iti_start = GetSecs;
+
             end
             
             
@@ -420,7 +450,7 @@ while  ~any(t.state == t.endStates) && c.quit == 0
             end
             
         case 999901
-            t.state =999900;
+            t.state = 999900;
             delayvar=GetSecs;
             s.TimeofPunish     = GetSecs - t.trstart;
             tstate_back=  0.0055559;
@@ -441,32 +471,47 @@ while  ~any(t.state == t.endStates) && c.quit == 0
                 strobe(c.codes.nolaser);
             end
             
+           
             
         case 999900
-            if GetSecs>=delayvar + 2
-                fprintf('End of trial >>>>>>>>>>>>>>>>>>>>> \n')
+            if (GetSecs - iti_start) >= iti_rwd_time
+                t.iti_reward = GetSecs - t.trstart;
+                t.state = 999905;
+                
+                s.ITI_RewardTime = c.iti_rwd_amount;
+                
+                if s.ITI_RewardTime>0
+                    Volt                        = 4.0;
+                    pad                         = 0.00;
+                    Wave_time                   = s.ITI_RewardTime+pad;
+                    t.Dacrate                   = 1000;
+                    reward_Voltages             = [zeros(1,round(t.Dacrate*pad/2)) Volt*ones(1,round(t.Dacrate*s.ITI_RewardTime)) zeros(1,round(t.Dacrate*pad/2))];
+                    t.ndacsamples               = floor(t.Dacrate*Wave_time);
+                    t.dacBuffAddr               = 6e6;
+                    t.chnl                      = c.outcomechannel;
+                    Datapixx('RegWrRd');
+                    DacData=Volt*ones(1,round(t.Dacrate*s.ITI_RewardTime));
+                    DacData(length(DacData):1000)=0;
+                    Datapixx('WriteDacBuffer', DacData);
+                    Datapixx('RegWrRd');
+                    Datapixx('SetDacSchedule', 0, [1000,1], 1000, t.chnl);
+                    Datapixx('StartDacSchedule');
+                    Datapixx('RegWrRd');
+                    fprintf('****ITI REWARD DELIVERED**** \n')
+                end
+                strobe(c.codes.iti_reward);
+                t.iti_reward     = GetSecs - t.trstart;
+                delayvar = GetSecs;
+ 
+            end
 
+        case 999905
+            if (GetSecs - iti_start) >= c.ITI_dur
+                fprintf('End of ITI >>>>>>>>>>>>>>>>>>>>> \n')
+               
                 strobe(c.codes.trialEnd);
                 t.state = 1.5;
-                t.trialover     = GetSecs - t.trstart;
-                %                 s.RewardTime_=0.1;
-                %                 Volt                        = 4.0;
-                %                 pad                         = 0.00;
-                %                 Wave_time                   = s.RewardTime_+pad;
-                %                 t.Dacrate                   = 1000;
-                %                 reward_Voltages             = [zeros(1,round(t.Dacrate*pad/2)) Volt*ones(1,round(t.Dacrate*s.RewardTime_)) zeros(1,round(t.Dacrate*pad/2))];
-                %                 t.ndacsamples               = floor(t.Dacrate*Wave_time);
-                %                 t.dacBuffAddr               = 6e6;
-                %                 t.chnl                      = c.outcomechannel;
-                %                 Datapixx('RegWrRd');
-                %                 DacData=Volt*ones(1,round(t.Dacrate*s.RewardTime_));
-                %                 DacData(length(DacData):1000)=0;
-                %                 Datapixx('WriteDacBuffer', DacData);
-                %                 Datapixx('RegWrRd');
-                %                 Datapixx('SetDacSchedule', 0, [1000,1], 1000, t.chnl);
-                %                 Datapixx('StartDacSchedule');
-                %                 Datapixx('RegWrRd');
-                
+                t.trialover     = GetSecs - t.trstart;  
             end
             
             
@@ -490,12 +535,14 @@ while  ~any(t.state == t.endStates) && c.quit == 0
         % Draw the grid
         Screen('DrawLines', c.window, t.GridXY,[], convertColorToL48D( t.gridc), c.middleXY);
         %DrawFormattedText(c.window, 'PUT TRIAL INFO HERE', 'center', 40, convertColorToL48D(t.gridc));
-        Datapixx('RegWrRd');
+        %Datapixx('RegWrRd');
         % Draw the gaze position, MUST DRAW THE GAZE BEFORE THE
         % FIXATION. Otherwise, when the gaze indicator goes over any
         % stimuli it will change the occluded stimulus' color!
-        Screen('FillRect', c.window, convertColorToL48D(t.ecolor), [s.EyeX s.EyeY s.EyeX s.EyeY] + [-1 -1 1 1]*c.EyePtR + repmat(c.middleXY,1,2));
+        
+        Screen('FillRect', c.window, convertColorToL48D(t.ecolor), [s.EyeX s.EyeY s.EyeX s.EyeY] + [-1 -1 1 1] * c.EyePtR + repmat(c.middleXY,1,2));
         Datapixx('RegWrRd');
+        
         % Draw the fixation and or target point / window (if desired)
         if tstate_back==0
             fixdotframe(c, t);
@@ -577,7 +624,7 @@ sendPlexonInfo(c, s, t);
 %   Finalize variables & store data to be saved.
 [PDS, c, s] = trial_end(PDS, c, s, t);
 
-end   
+end
 
 
 
@@ -607,7 +654,7 @@ V       = Datapixx('GetAdcVoltages');
 lickSpoutInstantForce = V(4); % licking neaby wall
 end
 
- 
+
 % Check eye positions
 function out = checkEye(pass, Eye, WinDim)
 out = all(abs(Eye)<WinDim) || pass;
@@ -744,137 +791,59 @@ c.AmpUse=11;
 
 
 if  c.chosen==1
-    
-    if c.rewardorpunishfirst==1
-        if  c.punishdel==0
-            
-            colors=9;
-            c.middleXYtt=c.middleXYt; c.middleXYtt(1)=c.middleXYtt(1)+70;
-            
-            PtpWindW    =  deg2pix(1,c); % target point window width
-            PtpWindH    =  deg2pix(c.PunishmentRange1,c); % target point window height
-            
-            Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-            n=c.maxValrangeOf1P;
-            PtpWindW    =  deg2pix(1,c); % target point window width
-            PtpWindH    =  deg2pix(n,c); % target point window height
-            Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
-        end
-        %%%
-        
-        colors=10;
-        PtpWindW    =  deg2pix(1,c); % target point window width
-        PtpWindH    =  deg2pix(c.RewardRange1,c); % target point window height
-        Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-        n=c.maxValrangeOf1R;
-        PtpWindW    =  deg2pix(1,c); % target point window width
-        PtpWindH    =  deg2pix(n,c); % target point window height
-        Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
-        
-        
-        
-    elseif c.rewardorpunishfirst==2
+    if  c.punishdel==0
         
         colors=9;
+        c.middleXYtt=c.middleXYt; c.middleXYtt(1)=c.middleXYtt(1)+70;
         
         PtpWindW    =  deg2pix(1,c); % target point window width
         PtpWindH    =  deg2pix(c.PunishmentRange1,c); % target point window height
-        
-        c.middleXYtt=c.middleXYt; c.middleXYtt(1)=c.middleXYtt(1)+70;
         
         Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
         n=c.maxValrangeOf1P;
         PtpWindW    =  deg2pix(1,c); % target point window width
         PtpWindH    =  deg2pix(n,c); % target point window height
         Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
-        
-        %%%
-        if  c.punishdel==0
-            colors=10;
-            
-            PtpWindW    =  deg2pix(1,c); % target point window width
-            PtpWindH    =  deg2pix(c.RewardRange1,c); % target point window height
-            %c.middleXYtt=c.middleXYt; %c.middleXYtt(1)=c.middleXYtt(1)+70;
-            
-            Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-            n=c.maxValrangeOf1R;
-            PtpWindW    =  deg2pix(1,c); % target point window width
-            PtpWindH    =  deg2pix(n,c); % target point window height
-            Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
-            
-        end
-        
     end
+    %%%
+    
+    colors=10;
+    PtpWindW    =  deg2pix(1,c); % target point window width
+    PtpWindH    =  deg2pix(c.RewardRange1,c); % target point window height
+    Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
+    n=c.maxValrangeOf1R;
+    PtpWindW    =  deg2pix(1,c); % target point window width
+    PtpWindH    =  deg2pix(n,c); % target point window height
+    Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
     
 end
 
 if  c.chosen==2
-    
-    if c.rewardorpunishfirst==1
-        if  c.punishdel==0
-            
-            colors=9;
-            c.middleXYtt=c.middleXYt; c.middleXYtt(1)=c.middleXYtt(1)+70;
-            
-            PtpWindW    =  deg2pix(1,c); % target point window width
-            PtpWindH    =  deg2pix(c.PunishmentRange2,c); % target point window height
-            
-            Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-            n=c.maxValrangeOf2P;
-            PtpWindW    =  deg2pix(1,c); % target point window width
-            PtpWindH    =  deg2pix(n,c); % target point window height
-            Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
-        end
-        %%%
-        
-        colors=10;
-        PtpWindW    =  deg2pix(1,c); % target point window width
-        PtpWindH    =  deg2pix(c.RewardRange2,c); % target point window height
-        Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-        n=c.maxValrangeOf2R;
-        PtpWindW    =  deg2pix(1,c); % target point window width
-        PtpWindH    =  deg2pix(n,c); % target point window height
-        Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
-        
-        
-        
-    elseif c.rewardorpunishfirst==2
+    if  c.punishdel==0
         
         colors=9;
+        c.middleXYtt=c.middleXYt; c.middleXYtt(1)=c.middleXYtt(1)+70;
         
         PtpWindW    =  deg2pix(1,c); % target point window width
         PtpWindH    =  deg2pix(c.PunishmentRange2,c); % target point window height
-        
-        c.middleXYtt=c.middleXYt; c.middleXYtt(1)=c.middleXYtt(1)+70;
         
         Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
         n=c.maxValrangeOf2P;
         PtpWindW    =  deg2pix(1,c); % target point window width
         PtpWindH    =  deg2pix(n,c); % target point window height
         Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
-        
-        %%%
-        if  c.punishdel==0
-            colors=10;
-            
-            PtpWindW    =  deg2pix(1,c); % target point window width
-            PtpWindH    =  deg2pix(c.RewardRange2,c); % target point window height
-            %c.middleXYtt=c.middleXYt; %c.middleXYtt(1)=c.middleXYtt(1)+70;
-            
-            Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-            n=c.maxValrangeOf2R;
-            PtpWindW    =  deg2pix(1,c); % target point window width
-            PtpWindH    =  deg2pix(n,c); % target point window height
-            Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
-            
-        end
-        
     end
+    %%%
     
+    colors=10;
+    PtpWindW    =  deg2pix(1,c); % target point window width
+    PtpWindH    =  deg2pix(c.RewardRange2,c); % target point window height
+    Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
+    n=c.maxValrangeOf2R;
+    PtpWindW    =  deg2pix(1,c); % target point window width
+    PtpWindH    =  deg2pix(n,c); % target point window height
+    Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
 end
-
-
-
 end
 
 % Show selected option, with reveal
@@ -886,91 +855,115 @@ c.middleXYt1=c.middleXY;
 c.middleXYt1(2)=c.middleXYt(2)-100;
 c.AmpUse=11;
 
-% If option A is selected
-if  c.chosen==1
-    
-    colors=9;
-    
-    PtpWindW    =  deg2pix(1,c); % target point window width
-    PtpWindH    =  deg2pix(c.maxValrangeOf1P*c.Offer1Pun,c); % target point window height
-    
-    c.middleXYtt=c.middleXYt; c.middleXYtt(1)=c.middleXYtt(1)+70;
-    
-    Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-    n=c.maxValrangeOf1P;
-    PtpWindW    =  deg2pix(1,c); % target point window width
-    PtpWindH    =  deg2pix(n,c); % target point window height
-    Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
-    
-    %%%
-    if c.punishdel==0
-        colors=10;
+rwd_reveal_color = convertColorToL48D(7);%[102 178 255];
+pun_reveal_color = convertColorToL48D(5);%[255 0 0];
+
+
+switch c.chosen
+    case 1 % Reward
+        targ_angle_in = t.ang1;
+        max_val_range_pun = c.maxValrangeOf1P;
+        offer_pun = c.Offer1Pun;
+        reward_range = c.RewardRange1;
+        punish_range = c.PunishmentRange1;
+        max_val_range_rwd = c.maxValrangeOf1R;
+        offer_rwd = c.Offer1Rew;
         
-        PtpWindW    =  deg2pix(1,c); % target point window width
-        PtpWindH    =  deg2pix(c.RewardRange1,c); % target point window height
-        Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-        n=c.maxValrangeOf1R;
-        PtpWindW    =  deg2pix(1,c); % target point window width
-        PtpWindH    =  deg2pix(n,c); % target point window height
-        Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
+    case 2 % Punish
+        targ_angle_in = t.ang2;
+        max_val_range_pun = c.maxValrangeOf2P;
+        offer_pun = c.Offer2Pun;
+        reward_range = c.RewardRange2;
+        punish_range = c.PunishmentRange2;
+        max_val_range_rwd = c.maxValrangeOf2R;
+        offer_rwd = c.Offer2Rew;
         
-        
-    elseif  c.punishdel==1
-        colors=10;
-        PtpWindW    =  deg2pix(1,c); % target point window width
-        PtpWindH    =  deg2pix(c.maxValrangeOf1R*c.Offer1Rew,c); % target point window height
-        Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-        n=c.maxValrangeOf1R;
-        PtpWindW    =  deg2pix(1,c); % target point window width
-        PtpWindH    =  deg2pix(n,c); % target point window height
-        Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang1  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
-        
-    end
-    
 end
 
-% If option B is selected
-
-if  c.chosen==2
-    
+if c.reveal_first_idx == 1 % REVEAL PUNISH FIRST
     colors=9;
     
     PtpWindW    =  deg2pix(1,c); % target point window width
-    PtpWindH    =  deg2pix(c.maxValrangeOf2P*c.Offer2Pun,c); % target point window height
-    
+    PtpWindH    =  deg2pix(max_val_range_pun*offer_pun,c); % target point window height
     c.middleXYtt=c.middleXYt; c.middleXYtt(1)=c.middleXYtt(1)+70;
+    Screen('FillRect',c.window, convertColorToL48D(colors),repmat(targ_angle_in  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
     
-    Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-    n=c.maxValrangeOf2P;
+    n=max_val_range_pun;
     PtpWindW    =  deg2pix(1,c); % target point window width
     PtpWindH    =  deg2pix(n,c); % target point window height
-    Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
+    Screen('FrameRect',c.window, pun_reveal_color,repmat(targ_angle_in  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
     
     %%%
     if c.punishdel==0
         colors=10;
         
         PtpWindW    =  deg2pix(1,c); % target point window width
-        PtpWindH    =  deg2pix(c.RewardRange2,c); % target point window height
-        Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-        n=c.maxValrangeOf2R;
+        PtpWindH    =  deg2pix(reward_range,c); % target point window height
+        Screen('FillRect',c.window, convertColorToL48D(colors),repmat(targ_angle_in  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
+        
+        n=max_val_range_rwd;
         PtpWindW    =  deg2pix(1,c); % target point window width
         PtpWindH    =  deg2pix(n,c); % target point window height
-        Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
+        Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(targ_angle_in  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
         
         
     elseif  c.punishdel==1
         colors=10;
         PtpWindW    =  deg2pix(1,c); % target point window width
-        PtpWindH    =  deg2pix(c.maxValrangeOf2R*c.Offer2Rew,c); % target point window height
-        Screen('FillRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
-        n=c.maxValrangeOf2R;
+        PtpWindH    =  deg2pix(max_val_range_rwd*offer_rwd,c); % target point window height
+        Screen('FillRect',c.window, convertColorToL48D(colors),repmat(targ_angle_in  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
+        
+        n=max_val_range_rwd;
         PtpWindW    =  deg2pix(1,c); % target point window width
         PtpWindH    =  deg2pix(n,c); % target point window height
-        Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(t.ang2  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
+        Screen('FrameRect',c.window, rwd_reveal_color,repmat(targ_angle_in  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
         
     end
     
+    
+else %%% REVEAL RWD FIRST
+    colors=10;
+    
+    PtpWindW    =  deg2pix(1,c); % target point window width
+    PtpWindH    =  deg2pix(max_val_range_rwd*offer_rwd,c); % target point window height
+    Screen('FillRect',c.window, convertColorToL48D(colors),repmat(targ_angle_in  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
+    
+    n=max_val_range_rwd;
+    PtpWindW    =  deg2pix(1,c); % target point window width
+    PtpWindH    =  deg2pix(n,c); % target point window height
+    Screen('FrameRect',c.window, rwd_reveal_color,repmat(targ_angle_in  + c.middleXYt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
+    
+    c.middleXYtt=c.middleXYt; c.middleXYtt(1)=c.middleXYtt(1)+70;
+    
+    %%%
+    if c.punishdel==0
+        
+        colors=9;
+        
+        PtpWindW    =  deg2pix(1,c); % target point window width
+        PtpWindH    =  deg2pix(punish_range,c); % target point window height
+        Screen('FillRect',c.window, convertColorToL48D(colors),repmat(targ_angle_in  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
+        
+        n=max_val_range_pun;
+        PtpWindW    =  deg2pix(1,c); % target point window width
+        PtpWindH    =  deg2pix(n,c); % target point window height
+        Screen('FrameRect',c.window, convertColorToL48D(colors),repmat(targ_angle_in  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
+        
+        
+    elseif  c.punishdel==1
+        colors=9;
+        
+        PtpWindW    =  deg2pix(1,c); % target point window width
+        PtpWindH    =  deg2pix(max_val_range_pun*offer_pun,c); % target point window height
+        Screen('FillRect',c.window, convertColorToL48D(colors),repmat(targ_angle_in  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],1)
+        
+        n=max_val_range_pun;
+        PtpWindW    =  deg2pix(1,c); % target point window width
+        PtpWindH    =  deg2pix(n,c); % target point window height
+        Screen('FrameRect',c.window, pun_reveal_color,repmat(targ_angle_in  + c.middleXYtt,1,2) + [-PtpWindW -PtpWindH PtpWindW PtpWindH*0],5)
+        
+        
+    end
     
 end
 
@@ -980,13 +973,12 @@ end
 function makescreenblank(c, t, s)
 Screen('FillRect', c.window, convertColorToL48D(c.backcolor));
 Screen('DrawLines', c.window, t.GridXY,[], convertColorToL48D( t.gridc), c.middleXY);
-Screen('FillRect', c.window, convertColorToL48D(t.ecolor), [s.EyeX s.EyeY s.EyeX s.EyeY] + [-1 -1 1 1]*c.EyePtR + repmat(c.middleXY,1,2));
+%Screen('FillRect', c.window, convertColorToL48D(t.ecolor), [s.EyeX s.EyeY s.EyeX s.EyeY] + [-1 -1 1 1]*c.EyePtR + repmat(c.middleXY,1,2));
 end
 
 
 function                        fixdotframeRew(c, t)
 cursorR           = 15;
-
 
 Screen('FrameRect',c.window, convertColorToL48D(t.fcolor),repmat(t.PfixXY + c.middleXY,1,2) + [-cursorR -cursorR cursorR cursorR],c.fixdotW)
 Screen('FrameRect',c.window, convertColorToL48D(t.fwcolor),repmat(t.PfixXY + c.middleXY,1,2) + [-t.PfpWindW -t.PfpWindH t.PfpWindW t.PfpWindH],c.fixwinW)
@@ -1084,7 +1076,7 @@ t.fcolor          = c.backcolor;          % fixation pt CLUT indx, initially thi
 t.fwcolor         = 3;                    % fixation window CLUT indx
 t.tcolor          = c.backcolor;          % target pt CLUT indx, initially this should be BG colored.
 t.twcolor         = 3;                    % target window CLUT indx
-t.ecolor          = 7;                    % eye position CLUT indx
+t.ecolor          = 3;                    % eye position CLUT indx
 t.gridc           = 1;                    % grid CLUT indx
 t.whitec          = 4;
 t.grey1c          = 1;
@@ -1279,20 +1271,20 @@ if c.j~=0
     
     % Stimuli information -----------------------------------------------
     PDS.targAngle1(c.j)         = c.angs(1);            % Target Angle (1)
-    PDS.targAngle2(c.j)         = c.angs(2);            % Target Angle (2)    
+    PDS.targAngle2(c.j)         = c.angs(2);            % Target Angle (2)
     PDS.targAmp(c.j)            = c.AmpUseAver;         % Target Amplitude (1 & 2)
     PDS.targFixDurReq(c.j)      = s.targFixDurReq;      % Required fixation time
-    PDS.outcomeorder(c.j)       = c.rewardorpunishfirst;% Reward or punish 
-
+    PDS.outcomeorder(c.j)       = c.rewardorpunishfirst;% Reward or punish
+    
     % Option related variables ------------------------------------------
     %   Option 1:
-
+    
     PDS.offerInfo{1}.choice_rwdamount(c.j) = c.maxValrangeOf1R;
     PDS.offerInfo{1}.choice_rwdprob(c.j) = c.RewardRange1./c.maxValrangeOf1R;
     PDS.offerInfo{1}.choice_punishamount(c.j) = c.maxValrangeOf1P;
     PDS.offerInfo{1}.choice_punishprob(c.j) = c.PunishmentRange1/c.maxValrangeOf1P;
     PDS.offerInfo{1}.reveal_rwdprob(c.j) = c.Offer1Rew;
-    PDS.offerInfo{1}.reveal_punishprob(c.j) = c.Offer1Pun; 
+    PDS.offerInfo{1}.reveal_punishprob(c.j) = c.Offer1Pun;
     
     %   Option 2:
     PDS.offerInfo{2}.choice_rwdamount(c.j) = c.maxValrangeOf2R;
@@ -1300,8 +1292,8 @@ if c.j~=0
     PDS.offerInfo{2}.choice_punishamount(c.j) = c.maxValrangeOf2P;
     PDS.offerInfo{2}.choice_punishprob(c.j) = c.PunishmentRange2/c.maxValrangeOf2P;
     PDS.offerInfo{2}.reveal_rwdprob(c.j) = c.Offer2Rew;
-    PDS.offerInfo{2}.reveal_punishprob(c.j) = c.Offer2Pun; 
-
+    PDS.offerInfo{2}.reveal_punishprob(c.j) = c.Offer2Pun;
+    
     %   Selection:
     PDS.whichtoshowfirst(c.j) = c.whichtoshowfirst;     % First shown option (1 or 2)
     PDS.chosenwindow(c.j)     = c.chosenwindow;         % Selected option
@@ -1315,20 +1307,20 @@ if c.j~=0
     PDS.timeChoice(c.j)         = t.timeChoice;         % ?Time of choice *to check
     PDS.timereward(c.j)         = t.timeOUTCOME;        % Reward delivery time
     PDS.trialover(c.j)          = t.trialover;          % Trial finish time
-
- 
+    
+    
     PDS.pulseprogtime(c.j)      = c.pulseprogtime;      % Laser duration
-    %PDS.iti_dur(c.j)            = c.ITI_dur;            % ITI duration
+    PDS.iti_dur(c.j)            = c.ITI_dur;            % ITI duration
     %PDS.ts_dur(c.j)             = c.TS_dur;             % TS duration
     %PDS.cs_dur(c.j)             = c.CS_dur;             % CS duration
-
+    PDS.reveal_first_idx        = c.reveal_first_idx;   % Index of first revealed outcome
     
     % Conditional outcomes:
     %   Punish time
     try PDS.timepunish(c.j)= s.TimeofPunish;
     catch PDS.timepunish(c.j)= NaN;
     end
-
+    
     %   Reward time
     try PDS.timereward(c.j)= s.RewardTime;
     catch PDS.timereward(c.j)= NaN;
@@ -1338,7 +1330,7 @@ if c.j~=0
     try PDS.magnitude_punish(c.j)= s.PunishStrength_;
     catch PDS.magnitude_punish(c.j)= NaN;
     end
-
+    
     %   Punish magnitude
     try PDS.magnitude_reward(c.j)= s.RewardTimeDur;
     catch PDS.magnitude_reward(c.j)= NaN;
@@ -1359,193 +1351,8 @@ Datapixx('RegWr');
 end
 
 %% Legacy code
-% function [EyeX, EyeY, joy, eXd, eYd]  =   getEyeJoy(c)
-% % update data-pixx registers
-% Datapixx('RegWrRd')
-% % read voltages
-% V       = Datapixx('GetAdcVoltages');
-% % Convert eye-voltages into screen-pixels.
-% EyeX    = sign(V(4))*deg2pix(8*abs(V(4)),c);  % deg to pixx; sign change in X to account for camera inversion.
-% EyeY    = sign(V(5))*deg2pix(8*abs(V(5)),c);
-% % read joy-voltage
-% joy     = V(6);
-% eXd     = 8*V(4);
-% eYd     = 8*V(5);
-%
-%
-% end
 
-% function  [lickSpoutInstantForce] = getLickForce(c)
-%
-% Datapixx('RegWrRd')
-% % read voltages
-% V       = Datapixx('GetAdcVoltages');
-%
-%
-% lickSpoutInstantForce = V(8); % licking neaby door
-% %     t.lickSpoutForce(t.wlCount, :)    = [lickSpoutInstantForce, GetSecs];
-%
-%
-% end
-
-
-%this strobe is the original that may have an error
-% function strobe(word)
-% Datapixx('SetDoutValues',fix(word),hex2dec('007fff'))    % set word in first 15 bits
-% Datapixx('RegWr');
-% Datapixx('SetDoutValues',2^16,hex2dec('010000'))   % set STRB to 1 (true)
-% Datapixx('RegWr');
-% Datapixx('SetDoutValues',0,hex2dec('017fff'))      % reset strobe and all 15 bits to 0.
-% Datapixx('RegWr');
-% end
-% 
-% function out                =   checkJoy(pass, Joy, Th)
-% % checkJoy checks if the joystick voltage is above th or below th depending
-% % on the SIGN of JOY & TH. For example: if JOY & TH are both positive, the
-% % function checks JOY > TH, but if JOY & TH are both negative, the function
-% % checks JOY < TH. Meanwhile, the PASS-value controls whether the funciton
-% % defaults to a true-state. If PASS is true, the funtion always returns
-% % "true."
-% 
-% out = Joy > Th || pass;
-% 
-% end.
-
-% 
-% 
-% function unpausePlexon
-% Datapixx('SetDoutValues',2^17,2^17);
-% Datapixx('RegWrRd');
-% end
-% 
-% function pausePlexon
-% Datapixx('SetDoutValues',0,2^17);
-% Datapixx('RegWrRd');
-% end
-% 
-% 
-% %this strobe is from fixate
-
-% 
 
 function sendPlexonInfo(c, s, t)
 
-% %start sending
-% strobe(c.codes.startsendingtrialinfo);
-%
-% strobe(c.rewardorpunishfirst+11000);
-% strobe(c.RewardRange1+12000);
-% strobe(c.RewardRange2+13000);
-% strobe(c.PunishmentRange1+12500);
-% strobe(c.PunishmentRange2+13500);
-% try
-% strobe( c.energy(c.PunishmentRange1./2)+12700);
-% catch
-%   strobe( c.energy(c.PunishmentRange1)+12700);
-% end
-%
-% try
-% strobe( c.energy(c.PunishmentRange2./2)+13700);
-% catch
-%     strobe( c.energy(c.PunishmentRange2)+13700);
-% end
-% strobe(c.codes.endsendingtrialinfo);
-
 end
-
-
-% 
-% function [c, PDS]               = plotwindowsetup(c, PDS)
-% 
-% % Create plotting windows
-% if isempty(findobj('Name','OnlinePlotWindow'))
-%     c.onplotwin         = figure('Position', [20 90 1600 1250],...
-%         'Name','OnlinePlotWindow',...
-%         'NumberTitle','off',...
-%         'Color',[0.8 0.8 0.8],...
-%         'Visible','on',...
-%         'NextPlot','add');
-% else
-%     c.onplotwin         = findobj('Name','OnlinePlotWindow');
-%     set(0, 'CurrentFigure', c.onplotwin);
-% end
-% 
-% % make a cell-array of x-axis text-labels and colors for plotting.
-% myColors                = [0 1 0; 1 0 0; 0 0 1];
-% myLabels                = {'Hit','Fixation-Break','Non-Start'};
-% 
-% % x-data for plotting
-% c.stateBreak            = [1.5 3 3.3];
-% c.X                     = [1 2 3];
-% Nx                      = length(c.X);
-% 
-% % create axis and plot handles for over-all performance
-% c.ax1 = subplot(211);
-% [c.fo, c.po]            = mybarerr(c.X, NaN(Nx,1), NaN(Nx,2), [], myColors);
-% 
-% % create axis and plot-handles for cumulative sums
-% c.ax2 = subplot(212);
-% c.cumpo                 = plot(NaN(2,Nx),NaN(2,Nx),'LineWidth',1.5);
-% 
-% set(c.cumpo(1),'Color', [0 1 0])
-% set(c.cumpo(2),'Color', [1 0 0])
-% set(c.cumpo(3),'Color', [0 0 1])
-% 
-% xlabel('Trial-Number','FontSize',18,'FontWeight','bold')
-% 
-% % set axis properties.
-% set(c.ax1,...
-%     'YGrid', 'on',...
-%     'YColor', [0.2 0.2 0.2],...
-%     'XGrid', 'on',...
-%     'XColor', [0.2 0.2 0.2],...
-%     'Color', [1 1 1],...
-%     'YLim', [0 1],...
-%     'XLim', [min(c.X)-1, max(c.X)+1],...
-%     'TickDir', 'out',...
-%     'TickLength',[0.005 0.001],...
-%     'LineWidth', 1.5,...
-%     'FontSize', 16,...
-%     'XTick', c.X,...
-%     'XTickLabel', myLabels);
-% set(c.ax2,...
-%     'YGrid', 'on',...
-%     'YColor', [0.2 0.2 0.2],...
-%     'XGrid', 'on',...
-%     'XColor', [0.2 0.2 0.2],...
-%     'Color', [1 1 1],...
-%     'TickDir', 'out',...
-%     'TickLength',[0.005 0.001],...
-%     'LineWidth', 1.5,...
-%     'FontSize', 16);
-% 
-% 
-% % read current axis position and adjust
-% ax1Pos = get(c.ax1,'Position');
-% ax2Pos = get(c.ax2,'Position');
-% set(c.ax1,'Position',[0.035 0.53 0.95 0.425])
-% set(c.ax2,'Position',[0.035 0.0425 0.95 0.45])
-% 
-% % create labels for various conditions.
-% vertPos     = 0.97;
-% annotPos    = [0.12 0.275 0.415 0.57 0.7225 0.8625];
-% 
-% % Show the online plot window.
-% set(c.onplotwin,'Visible','on');
-% end
-
-% PDS:
-%     PDS.RewardRange1(c.j)=c.RewardRange1;               % Option 1: Reward Range
-%     PDS.PunishmentRange1(c.j)=c.PunishmentRange1;       % Option 1: Punish Range
-%     PDS.rewfactoffer1(c.j) = c.rewfactoffer1;
-%     PDS.punfactoffer1(c.j) = c.punfactoffer1;
-%     PDS.infonessoffer1(c.j) = c.infonessoffer1;
-% %     PDS.Offer1Rew(c.j)         = c.Offer1Rew;
-% %     PDS.Offer1Pun(c.j)         = c.Offer1Pun;
-%     PDS.RewardRange2(c.j)=c.RewardRange2;               % Option 2: Reward Range
-%     PDS.PunishmentRange2(c.j)=c.PunishmentRange2;       % Option 2: Punish Range    
-%     PDS.rewfactoffer2(c.j) = c.rewfactoffer2;
-%     PDS.punfactoffer2(c.j) = c.punfactoffer2;
-%     PDS.infonessoffer2(c.j) = c.infonessoffer2;
-%     PDS.Offer2Rew(c.j)         = c.Offer2Rew;
-%     PDS.Offer2Pun(c.j)         = c.Offer2Pun;

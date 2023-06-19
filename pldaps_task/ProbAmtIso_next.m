@@ -24,7 +24,7 @@ try
     
     clear StrControl
     
-    load('/Users/ilyamonosov/Documents/MATLAB/ProbRwdPunish/LaserCalibration/pulseMatrix.mat')
+    load('/Users/ilya/Documents/MATLAB/ProbRwdPunish/LaserCalibration/pulseMatrix.mat')
     startChar = s.startChar;
     endChar = s.endChar;
     laserOnChar = s.laserOnChar;
@@ -65,14 +65,14 @@ if c.repeatflag==0
     c.chosen=0;
     c.punishdel=0;
     c.AmpUseAver=11;
-    c.outcomechannel = 0;
+    c.outcomechannel = 1;
 else
     c.showfirst=0;
     c.chosen=0;
     c.punishdel=0;
     s.targFixDurReq=c.targFixDurReq;
     c.AmpUseAver=11;
-    c.outcomechannel = 0;
+    c.outcomechannel = 1;
     c.targAmp               = 0;
     s.targXY                = [0 0];
     
@@ -84,7 +84,7 @@ function [c, s]         = nextparams(c, s)
 c.fracsize=4;
 c.infocuesize=1.75;
 
-ITI_dur= rand(3,6);
+ITI_dur= randi([3,6]);
 c.fixreq=2;
 TS_dur=0.5;
 CS_dur=3;
@@ -97,13 +97,18 @@ c.CS_dur=CS_dur;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-c.energy = [0.5 1];
-c.rewarddist = [0.1 1.0];
+c.energy = [1.5 2.0];
+c.rewarddist = [0.075 0.15];
 
 RewardRange1=[0 50 100]; % [0 50 100]
 RewardRange2=[0 50 100]; % [0 50 100]
 PunishmentRange1=[0 50 100]; % [0 50 100]
 PunishmentRange2=[0 50 100]; % [0 50 100]
+
+c.rewarddist = [0.175 0.175];
+RewardRange1=[100 100 100]; % [0 50 100]
+RewardRange2=[100 100 100]; % [0 50 100]
+
 
 for xB=1:100
     c.RewardRange1=RewardRange1(randi(length(RewardRange1)));
@@ -200,6 +205,21 @@ c.punfactoffer2=randi(2);
 c.infonessoffer1=randi(2);
 c.infonessoffer2=randi(2);
 
+c.rewfactoffer1=2;
+c.rewfactoffer2=2;
+
+% if randi(2)==1
+%     c.rewfactoffer1=2;
+% else
+%     c.rewfactoffer1=1.8;
+% end
+% 
+% if randi(2)==1
+%     c.rewfactoffer2=1.8;
+%     
+% else
+%     c.rewfactoffer2=2;
+% end
 
 c.maxValrangeOf1R=10 ./ c.rewfactoffer1;
 c.maxValrangeOf1P=10 ./ c.punfactoffer1;

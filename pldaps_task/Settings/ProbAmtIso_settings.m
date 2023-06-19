@@ -191,7 +191,7 @@ c.fpY               = 0;
 %c.cursorR           = 6;
 
 % Gaze-position indicator radius in pixels
-c.EyePtR            = 3;
+c.EyePtR            = 15;
 
 % fixation-point pen-thickness
 c.fixdotW           = 8;

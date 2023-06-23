@@ -29,13 +29,22 @@ option_2_unique_rwd_prob = option_2_unique_rwd_prob(~isnan(option_2_unique_rwd_p
 %% Tidy for output
 rwd_punish_values.option_1.rwd.amt = option_1_unique_rwd_amt;
 rwd_punish_values.option_2.rwd.amt = option_2_unique_rwd_amt;
+rwd_punish_values.option_all.rwd.amt = unique([option_1_unique_rwd_amt, option_2_unique_rwd_amt]);
 
 rwd_punish_values.option_1.rwd.prob = option_1_unique_rwd_prob;
 rwd_punish_values.option_2.rwd.prob = option_2_unique_rwd_prob;
+rwd_punish_values.option_all.rwd.prob = unique([option_1_unique_rwd_prob, option_2_unique_rwd_prob]);
 
 rwd_punish_values.option_1.punish.amt = option_1_unique_punish_amt;
 rwd_punish_values.option_2.punish.amt = option_2_unique_punish_amt;
+rwd_punish_values.option_all.punish.amt = unique([option_1_unique_punish_amt, option_2_unique_punish_amt]);
 
 rwd_punish_values.option_1.punish.prob = option_1_unique_punish_prob;
 rwd_punish_values.option_2.punish.prob = option_2_unique_punish_prob;
+rwd_punish_values.option_all.punish.prob = unique([option_1_unique_punish_prob, option_2_unique_punish_prob]);
+
+rwd_punish_values.option_all.rwd.ev = unique(rwd_punish_values.option_all.rwd.amt'.*rwd_punish_values.option_all.rwd.prob);
+rwd_punish_values.option_all.punish.ev = unique(rwd_punish_values.option_all.punish.amt'.*rwd_punish_values.option_all.punish.prob);
+
+
 

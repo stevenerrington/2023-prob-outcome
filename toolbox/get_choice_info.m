@@ -40,3 +40,4 @@ end
 
 option_info.option_selected = trialInfo.choiceSelected-1;
 option_info = struct2table(option_info);
+

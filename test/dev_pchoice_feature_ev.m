@@ -1,4 +1,10 @@
+function data_out = dev_pchoice_feature_ev(choice_info)
+
 rwd_punish_values = get_unique_rwdpunish(choice_info);
+
+% Color map
+punish_colors = {[181 220 255]./255; [124 204 253]./255; [4 150 239]./255; [2 67 108]./255;};
+rwd_colors = {[249 171 171]./255; [243 87 86]./255; [223 17 16]./255; [200 5 5]./255};
 
 clear p_choice_feature
 feature_list = {'punish_ev','rwd_ev'};
@@ -24,34 +30,33 @@ for feature_i = 1:length(feature_list)
     end
 end
 
-bar_data = [];
-bar_data = [p_choice_feature.punish_ev_1, p_choice_feature.punish_ev_2,...
-    p_choice_feature.punish_ev_3, p_choice_feature.punish_ev_4,...
-    p_choice_feature.rwd_ev_1, p_choice_feature.rwd_ev_2,...
-    p_choice_feature.rwd_ev_3];
+ev_labels = fieldnames(p_choice_feature);
+rwd_count = 0; pun_count = 0;
 
-figure('Renderer', 'painters', 'Position', [100 100 500 350]);
-b = bar([1:length(bar_data)],bar_data,'EdgeColor','none','BarWidth',0.75);
-xticklabels({'1: PunishEV','2: PunishEV','3: PunishEV','4: PunishEV',...
-    '1: RewardEV','2: RewardEV','3: RewardEV'})
-xtickangle( gca , 45 )
-
-b.FaceColor = 'flat';
-
-b.CData(1,:) = [181 220 255]./255;
-b.CData(2,:) = [124 204 253]./255;
-b.CData(3,:) = [4 150 239]./255;
-b.CData(4,:) = [2 67 108]./255;
-b.CData(5,:) = [249 171 171]./255;
-b.CData(6,:) = [243 87 86]./255;
-b.CData(7,:) = [223 17 16]./255;
-
-box off
-hline(0.5,'k--'); ylim([0 1])
-xlabel('Option feature')
-ylabel('P(Choosing option w/feature)')
+bar_data = []; bar_labels = [];
+for label_i = 1:size(ev_labels,1)
+    bar_data = [bar_data, p_choice_feature.(ev_labels{label_i})];
+    bar_labels = [bar_labels; ev_labels(label_i)];
+    
+    
+    if startsWith(ev_labels{label_i},'rwd')
+        rwd_count = rwd_count + 1;
+        out_color = rwd_colors{rwd_count};
+    end
+    if startsWith(ev_labels{label_i},'punish')
+        pun_count = pun_count + 1;
+        out_color = punish_colors{pun_count};
+    end    
+    
+    bar_color_data(label_i,:) = out_color;
+    
+end
 
 
-dim = [0.15 0.7 0.3 0.2];
-str = {['Session: ' datafile]; ['Monkey: Slayer']; ['Trials: ' int2str(size(choice_info,1))]};
-annotation('textbox',dim,'String',str,'FitBoxToText','on','EdgeColor','none', 'Interpreter', 'none');
+
+data_out.x = [1:length(bar_data)];
+data_out.y = bar_data;
+data_out.labels = bar_labels;
+data_out.color = bar_color_data;
+
+end

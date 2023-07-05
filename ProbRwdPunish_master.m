@@ -3,7 +3,7 @@ clear all; close all; clc
 dirs = get_dirs_probrwdpunish('wustl');
 
 % Define and load example datafile
-datafile = 'ProbRwdPunish_29_06_2023_12_05';
+datafile = 'ProbRwdPunish_05_07_2023_10_42';
 data = load(fullfile(dirs.data,datafile));
 
 % In development: merge multiple files from one day - dev_mergeFiles

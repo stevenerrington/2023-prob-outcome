@@ -3,8 +3,8 @@ function data_out = dev_pchoice_feature_ev(choice_info)
 rwd_punish_values = get_unique_rwdpunish(choice_info);
 
 % Color map
-punish_colors = {[181 220 255]./255; [124 204 253]./255; [4 150 239]./255; [2 67 108]./255;};
-rwd_colors = {[249 171 171]./255; [243 87 86]./255; [223 17 16]./255; [200 5 5]./255};
+rwd_colors = {[181 220 255]./255; [124 204 253]./255; [4 150 239]./255; [2 67 108]./255;};
+punish_colors = {[249 171 171]./255; [243 87 86]./255; [223 17 16]./255; [200 5 5]./255};
 
 clear p_choice_feature
 feature_list = {'punish_ev','rwd_ev'};

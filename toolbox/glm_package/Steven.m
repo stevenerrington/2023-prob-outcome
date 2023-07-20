@@ -37,7 +37,7 @@ for xyz = 1:length(DDD)
         ]';
 
     choices((find(isnan(choices(:,end))==1)+1),end)=NaN;
-    choices=choices(find(choices(:,end)>-1),:)
+    choices=choices(find(choices(:,end)>-1),:);
 
     AllChoices=[AllChoices; choices];
 end
@@ -58,13 +58,8 @@ rawbehav.choices=[Of1Er_reward
     Of1Er_punish
     Of2Er_reward
     Of2Er_punish
-    PDS.chosenwindow]'
+    PDS.chosenwindow]';
 
-% rawbehav.choices=[Of1choice_rwdamount
-%     Of1choice_punishamount
-%     Of2choice_rwdamount
-%     Of2choice_punishamount
-%     PDS.chosenwindow]'
 
 bbd.monk.sva{1} =aatradeoff_subjective_value_analysis_v04(rawbehav.choices);
  modan = bbd.monk.sva{1}.model;

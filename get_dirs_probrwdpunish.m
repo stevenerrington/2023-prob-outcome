@@ -9,7 +9,12 @@ switch user
     case 'mac'
         dirs.root = '/Users/stevenerrington/Desktop/Projects/2023-probrwdpunish';
         dirs.toolbox = '/Users/stevenerrington/Desktop/Projects/toolbox';        
-        dirs.toolbox = '/Users/stevenerrington/Box Sync/Research/2023-probrwdpunish/data';        
+        dirs.toolbox = '/Users/stevenerrington/Box Sync/Research/2023-probrwdpunish/data';    
+        
+    case 'home'
+        dirs.root = 'D:\projects\2023-probrwdpunish';
+        dirs.toolbox = 'C:\toolbox';
+        dirs.data = 'Y:\MONKEYDATA\Slayer2\ProbRwdPunish';
 end
 
 addpath(genpath(dirs.root));

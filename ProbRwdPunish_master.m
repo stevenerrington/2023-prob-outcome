@@ -2,7 +2,7 @@
 
 %% Setup workspace
 clear all; close all; clc; warning off
-dirs = get_dirs_probrwdpunish('mac');
+dirs = get_dirs_probrwdpunish('home');
 
 % Define and load example datafile
 datafile = 'ProbRwdPunish_21_07_2023_10_28';

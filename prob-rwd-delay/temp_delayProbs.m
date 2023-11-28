@@ -1,20 +1,24 @@
 %% Setup and load data
+clear all; clc
+
 % Change directory to temp folder
-cd('/Users/stevenerrington/Desktop/delay_temp')
+cd('/Users/stevenerrington/Desktop/Current/delay_temp')
 
 
-session_file = 'TESTProbRwdDelay_27_11_2023_07_30.mat';
-monkey = 'TEST';
+session_file = 'ProbRwdDelay_27_11_2023_10_49.mat';
+monkey = 'Zeppelin';
 
 % Load in example data
 load(session_file)
 
 % Slayer:
+% 'ProbRwdDelay_27_11_2023_10_50'
 % 'ProbRwdDelay_22_11_2023_10_18'
 % 'ProbRwdDelay_21_11_2023_10_50'
 % 'ProbRwdDelay_20_11_2023_10_38'
 
 % Zeppelin
+% 'ProbRwdDelay_27_11_2023_10_49'
 % 'ProbRwdDelay_22_11_2023_13_13'
 % 'ProbRwdDelay_22_11_2023_10_26'
 % 'ProbRwdDelay_21_11_2023_10_44'
@@ -104,11 +108,11 @@ cont_matrix = [p_delay_short_rwd_small, p_delay_mid_rwd_small, p_delay_long_rwd_
 
 %% Display contigency matrix
 % Generate figure as a heatmap
-figure;
-h = heatmap(cont_matrix.*100);
-ax = gca;
-ax.XDisplayLabels= {'Short Delay','Uncertain Delay','Long Delay',''};
-ax.YDisplayLabels= {'Small Reward','Uncertain Reward','Large Reward',''};
+% figure;
+% h = heatmap(cont_matrix.*100);
+% ax = gca;
+% ax.XDisplayLabels= {'Short Delay','Uncertain Delay','Long Delay',''};
+% ax.YDisplayLabels= {'Small Reward','Uncertain Reward','Large Reward',''};
 
 %% Find matched trials
 % Equal reward in both options
@@ -137,7 +141,7 @@ fprintf('The smaller delay was chosen on %i percent of trials in which the rewar
 %%
 
 delay_list = [0 5 10];
-reward_list = [0 10];
+reward_list = [0 5 10];
 
 out_test = [];
 label = {};
@@ -162,10 +166,6 @@ for delay_i = 1:length(delay_list)
                     delay_datatable.offer1_rwd == reward_list(reward_i) & delay_datatable.offer1_delay == delay_list(delay_i) &...
                     delay_datatable.offer2_rwd == reward_list(reward_j) & delay_datatable.offer2_delay == delay_list(delay_j));
 
-%                 if  isnan(out_test(count_b, count_a))
-%                     out_test(count_b, count_a) = 0;
-%                 end
-
                 out_test(count_b, count_a) = out_test(count_b, count_a) * 100;
 
             end
@@ -174,18 +174,18 @@ for delay_i = 1:length(delay_list)
 end
 
 
-% order = [7 4 1 8 5 2 9 6 3]; % for 3 (delay) x 3 (rwd) design
-order = [5 3 1 6 4 2]; % for 2 (delay) x 3 (rwd) design
-
-% Figure
-figure('Renderer', 'painters', 'Position', [100 300 600 500]);
-subplot(1,1,1)
-h = heatmap(out_test(order,order));
-ax = gca;
-ax.XDisplayLabels= label(order);
-ax.YDisplayLabels= label(order);
-ax.XLabel = 'Offer one attribute';
-ax.YLabel = 'Offer two attribute';
+order = [7 4 1 8 5 2 9 6 3]; % for 3 (delay) x 3 (rwd) design
+% order = [5 3 1 6 4 2]; % for 2 (delay) x 3 (rwd) design
+% 
+% % Figure
+% figure('Renderer', 'painters', 'Position', [100 300 600 500]);
+% subplot(1,1,1)
+% h = heatmap(out_test(order,order));
+% ax = gca;
+% ax.XDisplayLabels= label(order);
+% ax.YDisplayLabels= label(order);
+% ax.XLabel = 'Offer one attribute';
+% ax.YLabel = 'Offer two attribute';
 
 count = 0;
 
@@ -195,11 +195,14 @@ for delay_i = 1:length(delay_list)
     for reward_i = 1:length(reward_list)
         count = count + 1;
 
-
+        % Find trials with options that meet the current loop criteria (rwd
+        % and delay magnitude)
         trial_index = []; trial_index = ...
             find((delay_datatable.offer1_rwd == reward_list(reward_i) & delay_datatable.offer1_delay == delay_list(delay_i)) |...
             (delay_datatable.offer2_rwd == reward_list(reward_i) & delay_datatable.offer2_delay == delay_list(delay_i)));
 
+        % Find the probability that the option with the loop attributes was
+        % selected
         p_array(count) = ...
             mean(delay_datatable.chosen_rwd(trial_index) == reward_list(reward_i) &...
             delay_datatable.chosen_delay(trial_index)  == delay_list(delay_i));
@@ -210,27 +213,52 @@ end
 
 p_array =  p_array(order);
 
+[p_attrib_1_chosen, sum_attrib_1_chosen, sum_attrib_1_offered] = ...
+    get_probability_matrix(reward_list,delay_list,delay_datatable);
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Figure
-figure('Renderer', 'painters', 'Position', [100 300 1100 400]);
-subplot(1,2,1)
-h = heatmap(p_array([3 2 1; 6 5 4]));
+fig = figuren('Renderer', 'painters', 'Position', [100 300 1600 350]);
+subplot(1,3,1)
+h = heatmap(p_array([3 2 1; 6 5 4; 9 8 7])*100);
 ax = gca;
 ax.XDisplayLabels= {'Short','Uncertain','Long'};
-ax.YDisplayLabels= {'Small','Large'};
+ax.YDisplayLabels= {'Small','Uncertain','Large'};
 ax.XLabel = 'Delay attribute';
 ax.YLabel = 'Reward attribute';
 
-subplot(1,2,2); hold on
+subplot(1,3,2); hold on
 plot(1:length(p_array),p_array,'*-','LineWidth',2)
-xlim([0 length(p_array)+1]); %ylim([0 1])
-xticks([1:1:length(p_array)]); xticklabels({'Small reward | long delay', 'Small reward | uncertain delay', 'Small reward | short delay', ...
-    'Large reward | long delay', 'Large reward | uncertain delay', 'Large reward | short delay'})
+xlim([0 length(p_array)+1]); ylim([0 1])
+xticks([1:1:length(p_array)]); xticklabels(label(order))
 xlabel('Offer attribute')
 ylabel('P(trials) option selected')
+axis square
+axis on
 
-saveas(gcf,[session_file '-' monkey '-choiceP.png']);
+subplot(1,3,3); hold on
+imAlpha=ones(size(p_attrib_1_chosen));
+imAlpha(isnan(p_attrib_1_chosen))=0;
+imagesc(p_attrib_1_chosen-0.5,'AlphaData',imAlpha)
+xlim([0.5 length(order)+0.5]); ylim([0.5 length(order)+0.5]);
+xticks([1:1:length(order)]); xticklabels(label(order))
+yticks([1:1:length(order)]); yticklabels(label(order))
+set(gca,'color',0*[1 1 1],'YDir','Reverse');
+xlabel('Attribute 1')
+ylabel('Attribute 2')
+
+cmap = cbrewer2('RdBu');
+colormap(flipud(cmap))
+colorbar
+axis square
+axis on
+
+set(fig,'Units','Inches');
+pos = get(fig,'Position');
+set(fig,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+print(fig,[session_file '-' monkey '-choiceP.pdf'],'-dpdf','-r0')
 
 
 

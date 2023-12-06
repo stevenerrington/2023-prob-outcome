@@ -16,8 +16,7 @@ if c.repeatflag==0
     %% Next trial parameters
     [c, s]                  = nextparams(c, s);
     c.showfirst=0;
-    c.outcomechannel = 0;
-    
+   
 else
     c.showfirst=0;
     c.AmpUseAver=11;
@@ -27,7 +26,7 @@ end
 s.targFixDurReq = c.targFixDurReq;
 c.chosen=0;
 c.AmpUseAver=11;
-c.outcomechannel = 0;
+c.outcomechannel = 1;
 c.rwd_reveal_flag = 0;
 c.delay_reveal_flag=0;
 
@@ -58,9 +57,10 @@ c.AmpUse=11; % Target amplitude (11 degs)
 % Define magnitudes of delay and reward
 c.rwd_delay = [2 8]; % The short (1) and long (2) delay in seconds
 c.rewarddist = [0.13*1.3 0.34*1.3]; % The small (1) and large reward magnitude.
+c.rewarddist = [0.34*1.3 0.34*1.3]; % The small (1) and large reward magnitude.
 
 % Define probabilities of delay and reward
-rew_mag_offer1=[0 50 100]; delay_mag_offer1=[0 50 100];
+rew_mag_offer1=[100 100]; delay_mag_offer1=[0 100];
 rew_mag_offer2 = rew_mag_offer1; delay_mag_offer2 = delay_mag_offer1;
 
 %%% ////////////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ c.tick_diff = 0; % !SE THIS MAY BE ABLE TO GO
 % ITI definitions
 %       Here we define the properties of the inter-trial interval
 %%% ////////////////////////////////////////////////////////////////////////////
-c.ITI_dur = 0.5; % ITI duration in seconds
+c.ITI_dur = randi([2 6]) % 0.5; % ITI duration in seconds
 c.iti_rwd_amount = 0.0;
 
 

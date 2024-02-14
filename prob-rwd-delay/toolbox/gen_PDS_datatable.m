@@ -5,10 +5,10 @@ function delay_datatable = gen_PDS_datatable(PDS)
 delay_datatable = table(...
     PDS.trialnumber',... % Trial number
     PDS.goodtrial',... % Good trial flag
-    PDS.offerInfo{1}.choice_rwd' ,... % Offer 1 - Reward
-    PDS.offerInfo{1}.choice_delay',... % Offer 1 - Delay
-    PDS.offerInfo{2}.choice_rwd',... % Offer 2 - Reward
-    PDS.offerInfo{2}.choice_delay',... $ Offer 2 - Delay
+    PDS.offer1_choice_rwd' ,... % Offer 1 - Reward
+    PDS.offer1_choice_delay',... % Offer 1 - Delay
+    PDS.offer2_choice_rwd',... % Offer 2 - Reward
+    PDS.offer2_choice_delay',... $ Offer 2 - Delay
     PDS.chosenwindow',... % Chosen offer
     'VariableNames',{'trialN','goodtrial','offer1_rwd','offer1_delay','offer2_rwd','offer2_delay','choice'});
 

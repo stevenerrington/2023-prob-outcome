@@ -1,22 +1,25 @@
-function outstruct = gen_online_beh(PDS)
 
-% Dependencies: gen_PDS_datatable, get_p_array, get_probability_matrix,
-% figuren, nsubplot
-delay_datatable = gen_PDS_datatable(PDS);
 
-reward_list = [0 -5 5 10];
-delay_list = [10 5 -5 0];
+clear all; clc
+mat_dir = '/Users/stevenerrington/Desktop/ProbRwdDelay Data/Zepp/';
+mat_files = dir_mat_files(mat_dir);
 
-[p_array, p_array_label] = get_p_array(reward_list,delay_list,delay_datatable);
+for file_i = 1:length(mat_files)
+    load(fullfile(mat_dir,mat_files{file_i}))
+    clear outstruct; outstruct = gen_online_beh_multi(PDS);
 
-[p_attrib_1_chosen, ~, ~, label] = ...
-    get_probability_matrix(reward_list, delay_list,delay_datatable);
+    p_array(file_i,:) = outstruct.p_array;
+    p_attrib_1_chosen(file_i,:,:) = outstruct.p_attrib_1_chosen;
 
-% [~, p_array_order] = sort(p_array); % Sort low to high
-% p_array_order = [2, 6, 14, 10, 3, 7, 15, 11, 1, 5, 13, 9, 4, 8, 16, 12]; % for 4 (delay) x 4 (rwd) design
-% 
-% p_array = p_array(p_array_order);
-% p_array_label = p_array_label(p_array_order);
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+p_array = nanmean(p_array);
+p_attrib_1_chosen = squeeze(nanmean(p_attrib_1_chosen,1));
+
+p_array_label = outstruct.p_array_label;
+label = outstruct.label;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Figure
@@ -54,12 +57,4 @@ colormap(flipud(cmap))
 colorbar
 axis square
 axis on
-
-outstruct.p_array = p_array;
-outstruct.p_array_label = p_array;
-outstruct.p_attrib_1_chosen = p_attrib_1_chosen;
-outstruct.label = label;
-
-
-
 

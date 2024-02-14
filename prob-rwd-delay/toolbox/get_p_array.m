@@ -4,11 +4,11 @@ count = 0;
 p_array = [];
 label = {};
 
-for delay_i = 1:length(delay_list)
-    for reward_i = 1:length(reward_list)
+for reward_i = 1:length(reward_list)
+    for delay_i = 1:length(delay_list)
         count = count + 1;
 
-         label{count} = ['Reward: ' int2str(reward_list(reward_i)) ' | Delay: ' int2str(delay_list(delay_i))];
+        label{count} = ['Reward: ' int2str(reward_list(reward_i)) ' | Delay: ' int2str(delay_list(delay_i))];
 
 
         % Find trials with options that meet the current loop criteria (rwd

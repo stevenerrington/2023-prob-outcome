@@ -1,20 +1,5 @@
+function plot_probrwddelay_prob (outstruct, p_array, p_attrib_1_chosen)
 
-
-clear all; clc
-mat_dir = '/Users/stevenerrington/Desktop/ProbRwdDelay Data/Zepp/';
-mat_files = dir_mat_files(mat_dir);
-
-for file_i = 1:length(mat_files)
-    load(fullfile(mat_dir,mat_files{file_i}))
-    clear outstruct; outstruct = gen_online_beh_multi(PDS);
-
-    p_array(file_i,:) = outstruct.p_array;
-    p_attrib_1_chosen(file_i,:,:) = outstruct.p_attrib_1_chosen;
-
-end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 p_array = nanmean(p_array);
 p_attrib_1_chosen = squeeze(nanmean(p_attrib_1_chosen,1));
 
@@ -40,6 +25,7 @@ xlabel('Offer attribute')
 ylabel('P(trials) option selected')
 axis square
 axis on
+grid on
 
 subplot(1,3,3); hold on
 imAlpha=ones(size(p_attrib_1_chosen));
@@ -58,3 +44,7 @@ colorbar
 axis square
 axis on
 
+
+
+
+end

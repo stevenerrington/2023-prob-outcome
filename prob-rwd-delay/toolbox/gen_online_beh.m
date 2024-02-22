@@ -37,6 +37,7 @@ xlabel('Offer attribute')
 ylabel('P(trials) option selected')
 axis square
 axis on
+grid on
 
 subplot(1,3,3); hold on
 imAlpha=ones(size(p_attrib_1_chosen));

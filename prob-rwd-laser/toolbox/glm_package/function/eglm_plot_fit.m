@@ -255,21 +255,21 @@ xtickangle(gca,45);
 
 % set y-label based on the name of the units of the beta weights
 ylabel(fit.param.betascale.name);
-
-% plot basic stats of the fit
-basictext = {};
-if ~isempty(fit.name)
-    basictext{end+1} = fit.name;
-end
-if numel(pps) ~= fit.nx
-    basictext{end+1} = sprintf('showing %d/%d regressors',numel(pps),fit.nx);
-end
-if ~isnan(fit.p_correct_prediction)
-    basictext{end+1} = ['p(correct)=' roundstr(1,100*fit.p_correct_prediction) '%'];
-end
-basictext{end+1} = ['lik/tr = ' roundstr(.0001,exp(fit.mean_loglik_per_trial))];
-basictext{end+1} = ['n=' num2str(fit.n) ' trials'];
-etextn('lb',basictext,'color',[1 1 1]*.5);
+% 
+% % plot basic stats of the fit
+% basictext = {};
+% if ~isempty(fit.name)
+%     basictext{end+1} = fit.name;
+% end
+% if numel(pps) ~= fit.nx
+%     basictext{end+1} = sprintf('showing %d/%d regressors',numel(pps),fit.nx);
+% end
+% if ~isnan(fit.p_correct_prediction)
+%     basictext{end+1} = ['p(correct)=' roundstr(1,100*fit.p_correct_prediction) '%'];
+% end
+% basictext{end+1} = ['lik/tr = ' roundstr(.0001,exp(fit.mean_loglik_per_trial))];
+% basictext{end+1} = ['n=' num2str(fit.n) ' trials'];
+% etextn('lb',basictext,'color',[1 1 1]*.5);
 
 % horrible hack to plot to axes other than the current axes, by setting
 % the specified axes to be current, and then un-setting it when this

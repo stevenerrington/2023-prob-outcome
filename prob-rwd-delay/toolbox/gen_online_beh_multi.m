@@ -23,7 +23,7 @@ outstruct.p_array = p_array;
 outstruct.p_array_label = p_array_label;
 outstruct.p_attrib_1_chosen = p_attrib_1_chosen;
 outstruct.label = label;
-
+outstruct.datatable = delay_datatable;
 
 
 

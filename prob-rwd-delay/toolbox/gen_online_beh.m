@@ -3,6 +3,7 @@ function outstruct = gen_online_beh(PDS)
 % Dependencies: gen_PDS_datatable, get_p_array, get_probability_matrix,
 % figuren, nsubplot
 delay_datatable = gen_PDS_datatable(PDS);
+delay_datatable = delay_datatable(100:end,:);
 
 reward_list = [0 -5 5 10];
 delay_list = [10 5 -5 0];
@@ -60,7 +61,7 @@ outstruct.p_array = p_array;
 outstruct.p_array_label = p_array;
 outstruct.p_attrib_1_chosen = p_attrib_1_chosen;
 outstruct.label = label;
-
+outstruct.delay_datatable = delay_datatable;
 
 
 

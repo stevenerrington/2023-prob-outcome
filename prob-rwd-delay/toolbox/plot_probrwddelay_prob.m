@@ -1,8 +1,9 @@
 function plot_probrwddelay_prob (outstruct, p_array, p_attrib_1_chosen)
 
-p_array = nanmean(p_array);
-p_attrib_1_chosen = squeeze(nanmean(p_attrib_1_chosen,1));
-
+if size(p_array,1) > 1
+    p_array = nanmean(p_array);
+    p_attrib_1_chosen = squeeze(nanmean(p_attrib_1_chosen,1));
+end
 p_array_label = outstruct.p_array_label;
 label = outstruct.label;
 

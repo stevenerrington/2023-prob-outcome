@@ -31,6 +31,8 @@ for trial_i = 1:size(delay_datatable,1)
     delay_datatable.chosen_rwd(trial_i) = delay_datatable.(['offer' int2str(delay_datatable.choice(trial_i)) '_rwd'])(trial_i);
     delay_datatable.chosen_delay(trial_i) = delay_datatable.(['offer' int2str(delay_datatable.choice(trial_i)) '_delay'])(trial_i);
     delay_datatable.chosen_rt(trial_i) = PDS.timeChoice(trial_i) - PDS.timeOffer2(trial_i);
+    delay_datatable.chosen_order(trial_i) = delay_datatable.(['offer' int2str(delay_datatable.choice(trial_i)) '_att_order'])(trial_i);
+
 end
 
 end

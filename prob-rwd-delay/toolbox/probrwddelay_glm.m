@@ -13,7 +13,8 @@ switch approach
         
         % SE added
 
-        xreg{end+1} = struct('name','R-x-T','terms',{{ abs([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ]), abs([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ]) }}); % Time
+        xreg{end+1} = struct('name','R-x-T','terms',{{ abs([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ]), abs([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ]) }}); % Time
+        xreg{end+1} = struct('name','RU-x-TU','terms',{{ 'flag', sign([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ])==-1, sign([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ])==-1  }}); % Rew Unc x Time Unc
         
         xreg{end+1} = struct('name','AttOrder','terms',{{'flag', [ datatable{:,'offer1_att_order'}==1 datatable{:,'offer2_att_order'}==1 ]}}); % Time Uncertainty
         
@@ -23,6 +24,35 @@ switch approach
         xreg{end+1} = struct('name','RU-x-AttOrder','terms',{{'flag', sign([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ])==-1, [ datatable{:,'offer1_att_order'}==1 datatable{:,'offer2_att_order'}==1 ]}}); % Time Uncertainty
         xreg{end+1} = struct('name','TU-x-AttOrder','terms',{{'flag', sign([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ])==-1, [ datatable{:,'offer1_att_order'}==1 datatable{:,'offer2_att_order'}==1 ]}}); % Time Uncertainty
 
+        xreg{end+1} = struct('name','R-x-T-x-AttOrder','terms',{{ abs([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ]), abs([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ]), 'flag', [ datatable{:,'offer1_att_order'}==1 datatable{:,'offer2_att_order'}==1 ]}}); % Time
+        xreg{end+1} = struct('name','RU-x-TU-x-AttOrder','terms',{{ 'flag', sign([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ])==-1, sign([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ])==-1, [ datatable{:,'offer1_att_order'}==1 datatable{:,'offer2_att_order'}==1 ]  }}); % Rew Unc x Time Unc x Att Order
+
+        xreg{end+1} = struct('name','Offer2','terms',{{'flag', repmat([0 1],size(datatable,1),1) }}); % Offer 2 flag
+
+    case 'conceptual separate for AttOrder'
+        xreg = {};
+
+        % 1 if RT, 0 if TR
+        attorder = [ datatable{:,'offer1_att_order'}==1 datatable{:,'offer2_att_order'}==1 ];
+
+        xreg{end+1} = struct('name','RT','terms',{{'flag',  attorder == 1 }}); % Time Uncertainty
+
+        xreg{end+1} = struct('name','TR-R','terms',{{ abs([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ]) ,'flag', attorder==0}}); % Reward
+        xreg{end+1} = struct('name','TR-T','terms',{{ abs([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ]) ,'flag', attorder==0}}); % Time
+        xreg{end+1} = struct('name','TR-RU','terms',{{'flag', sign([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ])==-1 , attorder==0}}); % Reward Uncertainty
+        xreg{end+1} = struct('name','TR-TU','terms',{{'flag', sign([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ])==-1 , attorder==0}}); % Time Uncertainty
+        xreg{end+1} = struct('name','TR-R-x-T','terms',{{ abs([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ]), abs([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ]),'flag', attorder==0 }}); % Time
+        xreg{end+1} = struct('name','TR-RU-x-TU','terms',{{ 'flag', sign([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ])==-1, sign([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ])==-1, attorder==0  }}); % Rew Unc x Time Unc
+        
+        
+        xreg{end+1} = struct('name','RT-R','terms',{{abs([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ]), 'flag', attorder==1}}); % Time Uncertainty
+        xreg{end+1} = struct('name','RT-T','terms',{{abs([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ]), 'flag', attorder==1}}); % Time Uncertainty
+
+        xreg{end+1} = struct('name','RT-RU','terms',{{'flag', sign([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ])==-1, attorder==1}}); % Time Uncertainty
+        xreg{end+1} = struct('name','RT-TU','terms',{{'flag', sign([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ])==-1, attorder==1}}); % Time Uncertainty
+
+        xreg{end+1} = struct('name','RT-R-x-T','terms',{{ abs([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ]), abs([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ]), 'flag', attorder==1}}); % Time
+        xreg{end+1} = struct('name','RT-RU-x-TU','terms',{{ 'flag', sign([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ])==-1, sign([ datatable{:,'offer1_delay'} datatable{:,'offer2_delay'} ])==-1, attorder==1 }}); % Rew Unc x Time Unc x Att Order
 
         xreg{end+1} = struct('name','Offer2','terms',{{'flag', repmat([0 1],size(datatable,1),1) }}); % Offer 2 flag
 

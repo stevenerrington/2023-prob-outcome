@@ -102,6 +102,15 @@ switch approach
         % Add in a bias term
         xreg{end+1} = struct('name','offer2','terms',{{'flag', repmat([0 1],size(datatable,1),1) }});
 
+    case 'RU test'
+
+       med_uncert_trials = [ datatable{:,'offer1_rwd'}==-5 & datatable{:,'offer2_rwd'}==5 | ...
+          datatable{:,'offer1_rwd'}==5 & datatable{:,'offer2_rwd'}==-5 ];
+
+        xreg = {};
+        xreg{end+1} = struct('name','RU test','terms',{{'flag', sign([ datatable{:,'offer1_rwd'} datatable{:,'offer2_rwd'} ])}}); % Time Uncertainty
+
+
 
     case 'raw'
         cur1 = datatable{:,[4 5]}; % Offer 1 attributes

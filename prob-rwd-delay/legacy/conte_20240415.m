@@ -108,6 +108,10 @@ figuren('Renderer', 'painters', 'Position', [100 100 900 600]);
 eglm_plot_fit(glm_out)
 
 
+%% Test
+glm_out = probrwddelay_glm(data_table, 'RU test');
+figuren('Renderer', 'painters', 'Position', [100 100 900 600]);
+eglm_plot_fit(glm_out)
 
 
 
